@@ -86,7 +86,7 @@ The player includes a built-in **Theme Picker** in the sidebar.
 
 ## 📸 Screenshots
 
-![alt text](screenshots/demo.png)
+![alt text](Screenshots/demo.png)
 
 ---
 
