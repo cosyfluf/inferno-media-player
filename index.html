@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inferno Media Player</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <svg class="burger" viewBox="0 0 24 24" width="35" onclick="document.getElementById('sidebar').classList.toggle('hidden')">
+        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+    </svg>
+
+    <div id="sidebar">
+        <div class="sidebar-header">INFERNO</div>
+        <div class="menu-item" onclick="changeFolder()">📁 Ordner wählen</div>
+        <div class="menu-item" onclick="manualFile()">📄 Datei öffnen</div>
+        
+        <div class="menu-controls">
+            <div class="volume-box">
+                <span>🔊</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+            </div>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="🔍 Song suchen..." autocomplete="off">
+            </div>
+        </div>
+
+        <div id="playlist"></div>
+    </div>
+
+    <div id="main">
+        <div id="media-display">
+            <img id="cover" src="alt.png" style="display:none;" onerror="this.src='alt.png'; this.onerror=null;">
+            <video id="video" style="display:none;" crossorigin="anonymous"></video>
+        </div>
+
+        <div class="info">
+            <h1 id="title">Bereit für Inferno?</h1>
+            <p id="details">Wähle einen Track aus deiner Liste</p>
+        </div>
+
+        <canvas id="visualizer"></canvas>
+
+        <div class="controls">
+            <div class="progress-box">
+                <span class="time" id="t-cur">-0:00</span>
+                <div id="progress-bar">
+                    <div id="progress-fill"></div>
+                </div>
+                <span class="time" id="t-dur">-0:00</span>
+            </div>
+            <div class="btns">
+                <svg class="btn" id="shuffle" viewBox="0 0 24 24" onclick="isShuffle=!isShuffle; this.classList.toggle('active')">
+                    <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.45 20 9.5V4h-5.5zm.59 11.06l-1.42 1.41L18.59 21l1.41-1.41-5.06-5.06z"/>
+                </svg>
+                <svg class="btn" viewBox="0 0 24 24" onclick="playPrev()">
+                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                </svg>
+                <svg class="btn play-btn" id="play-trigger" viewBox="0 0 24 24" onclick="togglePlay()">
+                    <path id="play-icon" d="M8 5v14l11-7z"/>
+                </svg>
+                <svg class="btn" viewBox="0 0 24 24" onclick="playNext()">
+                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                </svg>
+                <svg class="btn" id="loop" viewBox="0 0 24 24" onclick="isLoop=!isLoop; this.classList.toggle('active')">
+                    <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="flames"></div>
+    </div>
+
+    <audio id="audio" crossorigin="auto"></audio>
+
+    <script src="mainframe.js"></script>
+</body>
+</html>
