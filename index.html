@@ -14,10 +14,7 @@
 
     <div id="sidebar">
         <div class="sidebar-header">INFERNO</div>
-        <div class="menu-item" onclick="changeFolder()">📁 Ordner wählen</div>
-        <div class="menu-item" onclick="manualFile()">📄 Datei öffnen</div>
-        
-        <div class="menu-controls">
+                <div class="menu-controls">
             <div class="volume-box">
                 <span>🔊</span>
                 <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
@@ -26,6 +23,9 @@
                 <input type="text" id="search-input" placeholder="🔍 Song suchen..." autocomplete="off">
             </div>
         </div>
+        
+        <div class="menu-item" onclick="changeFolder()">📁 Ordner wählen</div>
+        <div class="menu-item" onclick="manualFile()">📄 Datei öffnen</div>
 
         <div id="playlist"></div>
     </div>
