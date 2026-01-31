@@ -1,7 +1,7 @@
 import webview
 import os
 import base64
-import json  # Neu: Zum Speichern der Einstellungen
+import json  
 import tkinter as tk
 from tkinter import filedialog
 from mutagen.id3 import ID3, APIC
@@ -10,7 +10,7 @@ import urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import threading
 
-# Pfad zur Konfigurationsdatei
+# --- CONFIGURATION ---
 CONFIG_FILE = Path(__file__).parent / "config.json"
 
 # --- MEDIA SERVER ---
@@ -41,14 +41,14 @@ def start_server():
 class Api:
     def __init__(self):
         self.port = 8080
-        # Lade den gespeicherten Pfad oder nutze den Standard-Musikordner
+        # load or create config and get saved path
         self.current_path = self.load_config()
 
     def load_config(self):
-        """Lädt den Pfad oder erstellt die Datei neu, falls sie fehlt."""
+        """creates or loads config file and returns saved path or default music folder."""
         default_path = str(Path.home() / "Music")
         
-        # Falls die Datei noch nicht existiert -> Erstelle sie jetzt mit dem Standardpfad
+        # if config file does not exist, create it with default path
         if not CONFIG_FILE.exists():
             self.save_config(default_path)
             return default_path
@@ -60,36 +60,36 @@ class Api:
                 if saved_path and os.path.exists(saved_path):
                     return saved_path
         except Exception as e:
-            print(f"Fehler beim Laden: {e}")
+            print(f"Error while loading config: {e}")
             
         return default_path
 
     def save_config(self, path):
-        """Speichert den gewählten Pfad in der config.json."""
+        """Saves the selected path to the config file."""
         try:
             with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                 json.dump({"default_path": path}, f, indent=4)
         except Exception as e:
-            print(f"Fehler beim Speichern der Config: {e}")
+            print(f"Error while saving config: {e}")
 
     def get_local_url(self, file_path):
         return f"http://127.0.0.1:{self.port}/media?path={urllib.parse.quote(str(file_path))}"
 
     def set_standard_folder(self):
-        """Öffnet Dialog, um den Standard-Ordner dauerhaft festzulegen."""
+        """opens dialog to select default music folder and saves it."""
         root = tk.Tk()
         root.withdraw()
-        path = filedialog.askdirectory(title="Standard Musik-Ordner wählen")
+        path = filedialog.askdirectory(title="choose the default music folder")
         root.destroy()
         
         if path:
             self.current_path = str(path)
-            self.save_config(self.current_path) # Speichern für nächstes Mal
+            self.save_config(self.current_path) # save the selected path
             return {"path": self.current_path, "files": self.scan_folder(self.current_path)}
         return None
 
     def select_folder(self):
-        """Temporäres Ordner-Wählen (ohne den Standard zu ändern)."""
+        """Temporary folder selection without saving."""
         root = tk.Tk()
         root.withdraw()
         path = filedialog.askdirectory()
@@ -106,13 +106,13 @@ class Api:
         try:
             for file in search_path.rglob('*'):
                 if file.suffix.lower() in extensions:
-                    # Wir holen uns hier direkt die Metadaten für die Vorschau
+                    # get metadata
                     meta = self.get_metadata(str(file.absolute()))
                     files_list.append({
-                        "name": meta["title"],    # Der schönere Titel aus den Tags
-                        "artist": meta["artist"], # Künstler für die Unterzeile
+                        "name": meta["title"],    # Title from tags
+                        "artist": meta["artist"], # artiist from tags
                         "path": str(file.absolute()),
-                        "cover": meta["cover"],   # Das Base64 Cover
+                        "cover": meta["cover"],   # BASE64 Cover
                         "filename": str(file.name) # Fallback
                     })
         except Exception as e:
@@ -125,8 +125,8 @@ class Api:
         metadata = {
             "path": self.get_local_url(path_str),
             "title": str(os.path.basename(path_str)),
-            "artist": "Unbekannter Interpret",
-            "album": "Unbekanntes Album",
+            "artist": "Unknown Artist",
+            "album": "Unknown Album",
             "genre": "Inferno Media",
             "cover": "",
             "type": "audio"
