@@ -1,67 +1,67 @@
-
 # 🔥 Inferno Media Player
 
-**Inferno Media Player** is a lightweight, modern, and highly customizable desktop media player built with **Python** and **Web Technologies**. It combines the power of a local backend with the styling capabilities of modern CSS3.
+**Inferno Media Player** is a lightweight, modern, and highly customizable desktop media player built with **Python** and **Web Technologies**. It combines the robust backend capabilities of Python with the sleek styling of modern CSS3 and JavaScript.
 
-It features a sleek dark mode, a real-time audio visualizer, and a dynamic theming engine that allows you to change the look and feel instantly.
+The player features an aggressive "Inferno" dark theme, a real-time audio visualizer, and a dynamic theme engine that allows you to change the entire UI accent color on the fly.
 
 ---
 
 ## 🚀 Key Features
 
-*   **Hybrid Architecture:** Built using `pywebview`, combining Python logic with an HTML/CSS/JS interface.
-*   **Media Support:** Plays both **Audio** (MP3, WAV, etc.) and **Video** formats seamlessly.
-*   **Real-time Visualizer:** Integrated HTML5 Canvas audio spectrum visualizer.
-*   **Smart Playlist:**
-    *   Folder scanning.
-    *   Instant search filtering.
-    *   Single file import.
-*   **Advanced Controls:**
-    *   Scrubbable progress bar.
-    *   Volume control.
-    *   Shuffle & Loop modes.
+*   **Hybrid Architecture:** Powered by `pywebview`, bridging an HTML5/CSS3/JS frontend with a Python logic backend.
+*   **Multi-Format Support:** Seamlessly plays both **Audio** (MP3, WAV, OGG) and **Video** (MP4, WEBM) files.
+*   **Real-time Visualizer:** Integrated HTML5 Canvas audio spectrum visualizer that reacts dynamically to frequency data.
+*   **Smart Library Management:**
+    *   **Folder Scanning:** Automatically scans directories for media and extracts metadata.
+    *   **Single File Import:** Quickly open individual files directly via the system file explorer.
+    *   **Instant Search:** Filter your playlist by song title or artist in real-time.
+*   **Advanced Playback Controls:**
+    *   **Draggable Progress Bar:** Click or drag to scrub through tracks accurately.
+    *   **Metadata Extraction:** Displays album art, titles, and artist info using `mutagen`.
+    *   **Shuffle & Loop:** Standard toggle modes for personalized listening.
 *   **🎨 Dynamic Theme Engine:**
-    *   **Live Color Picker:** Change the accent color on the fly.
-    *   **CSS Gradients:** The UI automatically calculates gradients and glow effects based on your chosen color.
-    *   **Responsive Sidebar:** Collapsible menu with smooth transitions.
+    *   **Live Color Picker:** Change the accent color (default: Red) via the menu.
+    *   **Adaptive UI:** Watch as glow effects, progress bars, visualizer colors, and buttons instantly adapt to your chosen color.
+*   **Persistent Settings:** Saves your default music folder automatically in a `config.json` file.
 
 ---
 
 ## 🛠️ Tech Stack
 
 *   **Backend:** Python 3.x
-*   **GUI Framework:** [pywebview](https://pywebview.flowrl.com/)
-*   **Frontend:** HTML5, CSS3 (Variables, Flexbox, Gradients), Vanilla JavaScript
-*   **Audio API:** Web Audio API (for the visualizer)
+*   **Library:** [pywebview](https://pywebview.flowrl.com/) for the GUI.
+*   **Metadata:** [mutagen](https://github.com/quodlibet/mutagen) for reading ID3 tags and covers.
+*   **Frontend:** HTML5, CSS3 (Flexbox, CSS Variables), Vanilla JavaScript.
+*   **Server:** Python's `http.server` with range-request support (crucial for video scrubbing).
 
 ---
 
 ## 📦 Installation & Usage
 
 ### 1. Prerequisites
-Ensure you have Python installed. You will need the `pywebview` library.
+Ensure you have Python installed. You will need the following libraries:
 
 ```bash
-pip install pywebview
-# Optional: Depending on your OS, you might need a specific renderer
-# pip install pywebview[qt]  # For Qt (recommended)
-# pip install pywebview[cef] # For CEF
+pip install pywebview mutagen
 ```
 
+*Note: Depending on your OS, `pywebview` might require a specific renderer (like `QT` or `CEF`). Check the pywebview documentation for details.*
+
 ### 2. Project Structure
-Ensure your folder looks like this:
+Ensure your directory is organized as follows:
 
 ```text
 /InfernoPlayer
 │
-├── main.py          # The Python entry point (Backend logic)
-├── index.html       # The main GUI structure
-├── style.css        # Styling and Theme variables
-└── mainframe.js     # Frontend logic and Audio Context
+├── main.py          # Python Backend & API
+├── index.html       # UI Structure
+├── style.css        # Styling & Theme Variables
+├── mainframe.js     # Logic & Audio Context
+└── config.json      # (Auto-generated) Stores user settings
 ```
 
 ### 3. Run the Application
-Execute the Python script to start the player:
+Launch the player by running:
 
 ```bash
 python main.py
@@ -71,29 +71,17 @@ python main.py
 
 ## 🎨 Customization
 
-The player includes a built-in **Theme Picker** in the sidebar.
-
-1.  Open the Sidebar (Hamburger menu).
-2.  Locate the **"Theme Farbe"** (Theme Color) input.
-3.  Select any color.
-4.  The application will instantly update:
-    *   Glow effects.
-    *   Background gradients.
-    *   Sidebar borders.
-    *   Visualizer bars.
-
----
-
-## 📸 Screenshots
-
-![alt text](Screenshots/demo.png)
+Access the **Sidebar Menu** (Hamburger icon in the top right) to:
+1.  **Toggle Visualizer:** Enable or disable the spectrum bars.
+2.  **Theme Color:** Select any color to completely change the look of the player.
+3.  **Choose Folder:** Set a new permanent directory for your media library.
 
 ---
 
 ## 📜 License
 
-This project is open-source. Feel free to modify, distribute, and use it as you wish.
+This project is licensed under the MIT License.
 
 ---
 
-**Created with 🔥 by cosyfluf
+**Created with 🔥 by cosyfluf**
