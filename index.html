@@ -77,9 +77,18 @@
 </svg>
     <div id="menu">
         <div class="menu-header">MENU</div>
+
+        <div class="menu-item toggle-item">
+            <span>Visualizer</span>
+            <label class="switch">
+                <input type="checkbox" id="visualizer-toggle" checked onchange="toggleVisualizer(this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div> 
+
             <div class="menu-controls"> 
                 <div class="menu-item" onclick="changeFolder()">📁 Ordner wählen</div>
-                <div class="menu-item" onclick="manualFile()">📄 Datei öffnen</div>
+                <div class="menu-item" onclick="manualFile()">📄 Datei öffnen</div>        
             </div>
         </div>
     </div>

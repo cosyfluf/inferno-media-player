@@ -14,6 +14,8 @@ let isDragging = false; // Wichtig für das Vorspulen
 
 let audioCtx, analyser, sourceAudio, sourceVideo;
 
+let isVisualizerEnabled = true; // Standardmäßig an
+
 window.addEventListener('pywebviewready', async () => {
     const files = await window.pywebview.api.scan_folder();
     if(files) renderPlaylist(files);
@@ -229,6 +231,19 @@ function fmt(s) {
     return `${m}:${r < 10 ? '0' + r : r}`;
 }
 
+// --- TOGGLE VISUAL ---
+function toggleVisualizer(isEnabled) {
+    isVisualizerEnabled = isEnabled;
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+
+    if (!isEnabled) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    } else {
+        draw();
+    }
+}
+// --- VISUAL ---
 function setupVisualizer(elem) {
     if (!audioCtx) return;
     if (!analyser) {
@@ -250,18 +265,26 @@ function setupVisualizer(elem) {
 }
 
 function draw() {
+
+    if (!isVisualizerEnabled) return;
+
     requestAnimationFrame(draw);
+
     if(!analyser) return;
+
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
     analyser.getByteFrequencyData(dataArray);
+
     const canvas = document.getElementById('visualizer');
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
+
     ctx.clearRect(0, 0, width, height);
     const barCount = 60;
     const barWidth = (width / barCount);
+
     for (let i = 0; i < barCount; i++) {
         const barHeight = (dataArray[i] / 255) * height;
         ctx.fillStyle = `rgb(${dataArray[i] + 100}, 0, 0)`;

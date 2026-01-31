@@ -110,6 +110,7 @@
 
             margin-right: -322px;
         }
+
         #menu.menu-open {
             margin-right: 0px;
         }
@@ -149,7 +150,64 @@
             border-left: 4px solid var(--red);
         }
 
-        /* --- Playlist Styling wie Spotify --- */
+        .toggle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 25px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #222;
+            transition: .4s;
+            border-radius: 20px;
+            border: 1px solid #444;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 2px;
+            background-color: #888;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--dark-red);
+            border-color: var(--red);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(24px);
+            background-color: white;
+            box-shadow: 0 0 10px var(--red);
+        }
+
+        /* --- Playlist Styling --- */
         #playlist {
             flex: 1;
             overflow-y: auto;
@@ -236,9 +294,6 @@
             background: radial-gradient(circle at center, #150000 0%, #000000 100%);
         }
 
-        /* ... (Bestehender Code bis .menu-item) ... */
-
-        /* --- NEU: Menu Controls (Suche & Volume) --- */
         .menu-controls {
             padding: 20px;
             border-bottom: 1px solid #300;
@@ -276,7 +331,6 @@
             border-radius: 50%;
             background: var(--red);
             margin-top: -6px;
-            /* Ausrichten auf der Track-Mitte */
             box-shadow: 0 0 10px var(--red);
             transition: 0.2s;
         }
@@ -291,7 +345,6 @@
             width: 100%;
             padding: 10px;
             box-sizing: border-box;
-            /* Damit Padding nicht die Breite sprengt */
             background: #110000;
             border: 1px solid #400;
             border-radius: 4px;
@@ -316,7 +369,6 @@
             width: auto;
             max-width: 90%;
             max-height: 45vh;
-            /* Begrenzt die Höhe auf 50% des Bildschirms */
             background: #000;
             border: 1px solid #300;
             border-radius: 15px;
@@ -370,7 +422,6 @@
             margin-bottom: 20px;
         }
 
-        /* --- CONTROLS --- */
         .controls {
             width: 85%;
             max-width: 700px;
