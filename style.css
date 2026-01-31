@@ -470,8 +470,26 @@
             justify-content: center;
             align-items: center;
             gap: 40px;
+            position:relative;
+            width: 100%;
+            min-height: 50px;
         }
 
+        .random {
+            position: absolute;
+            left: 0;
+            fill: #666;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .random:hover {
+            fill: var(--red);
+            transform: scale(1.2);
+            filter: drop-shadow(var(--glow));
+        }
         .btn {
             fill: #666;
             width: 32px;
