@@ -74,7 +74,7 @@ python main.py
 
 ## Screenshots
 
-![Demo](Screenshots/demo.png)
+![Demo](screenshots/demo.png)
 
 ## 🎨 Customization
 
