@@ -18,6 +18,7 @@ import threading
 CONFIG_FILE = Path(__file__).parent / "config.json"
 
 # --- MEDIA SERVER ---
+# --- MEDIA SERVER (Updated with Range Support) ---
 class MediaHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed_url = urllib.parse.urlparse(self.path)
@@ -26,12 +27,34 @@ class MediaHandler(SimpleHTTPRequestHandler):
             file_path = params.get('path', [None])[0]
             
             if file_path and os.path.exists(file_path):
-                self.send_response(200)
+                file_size = os.path.getsize(file_path)
+                range_header = self.headers.get('Range', None)
+                
+                # Default values for the whole file
+                byte_start = 0
+                byte_end = file_size - 1
+
+                if range_header:
+                    # Parse Range: bytes=start-end
+                    range_match = range_header.strip().split('=')[-1]
+                    parts = range_match.split('-')
+                    if parts[0]: byte_start = int(parts[0])
+                    if parts[1]: byte_end = int(parts[1])
+                    
+                    self.send_response(206) # Partial Content
+                    self.send_header('Content-Range', f'bytes {byte_start}-{byte_end}/{file_size}')
+                else:
+                    self.send_response(200)
+
                 self.send_header('Access-Control-Allow-Origin', '*')
-                self.send_header('Content-Type', 'application/octet-stream')
+                self.send_header('Content-Type', 'audio/mpeg' if file_path.endswith('.mp3') else 'video/mp4')
+                self.send_header('Content-Length', str(byte_end - byte_start + 1))
+                self.send_header('Accept-Ranges', 'bytes')
                 self.end_headers()
+
                 with open(file_path, 'rb') as f:
-                    self.wfile.write(f.read())
+                    f.seek(byte_start)
+                    self.wfile.write(f.read(byte_end - byte_start + 1))
                 return
         self.send_error(404)
 

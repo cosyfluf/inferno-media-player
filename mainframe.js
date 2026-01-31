@@ -50,17 +50,25 @@ window.addEventListener('pywebviewready', async () => {
 
 /*-- PROGRESS BAR LOGIC --*/
 if (progressBar) {
+    // Start dragging when clicking down on the bar
     progressBar.addEventListener('mousedown', (e) => {
+        if (!current || isNaN(current.duration)) return;
         isDragging = true;
         handleScrub(e);
     });
 
+    // Handle the movement globally so the user can drag outside the bar
     document.addEventListener('mousemove', (e) => {
-        if (isDragging) handleScrub(e);
+        if (isDragging) {
+            handleScrub(e);
+        }
     });
 
+    // Stop dragging when mouse is released anywhere
     document.addEventListener('mouseup', () => {
-        isDragging = false;
+        if (isDragging) {
+            isDragging = false;
+        }
     });
 }
 
@@ -213,26 +221,51 @@ function playPrev() {
     selectTrack(index);
 }
 
+/**
+ * Calculates the new time based on mouse position and updates the UI/Media
+ * @param {MouseEvent} e 
+ */
+function handleScrub(e) {
+    if (!current || !isFinite(current.duration)) return;
+
+    const rect = progressBar.getBoundingClientRect();
+    
+    // Calculate horizontal offset relative to the progress bar container
+    let offsetX = e.clientX - rect.left;
+
+    // Clamp the value between 0 and the bar's full width
+    offsetX = Math.max(0, Math.min(offsetX, rect.width));
+
+    // Calculate percentage and target time
+    const percentage = offsetX / rect.width;
+    const targetTime = percentage * current.duration;
+
+    // Update the media playback position
+    current.currentTime = targetTime;
+
+    // Immediate UI feedback for the fill bar and the timestamp
+    progressFill.style.width = (percentage * 100) + "%";
+    document.getElementById('t-cur').innerText = fmt(targetTime);
+}
+
+
 // --- MEDIA EVENTS ---
 [audio, video].forEach(m => {
     m.onended = () => { if(!isLoop) playNext(); else m.play(); };
     
     m.ontimeupdate = () => {
-        // use m.duration only if valid
-        const dur = m.duration && isFinite(m.duration) && m.duration > 0 ? m.duration : 0;
-        const cur = m.currentTime || 0;
-        
-        document.getElementById('t-cur').innerText = fmt(cur);
+        // Only update the progress bar automatically if the user is NOT dragging it
+        if (!isDragging) {
+            const dur = m.duration && isFinite(m.duration) && m.duration > 0 ? m.duration : 0;
+            const cur = m.currentTime || 0;
+            
+            document.getElementById('t-cur').innerText = fmt(cur);
 
-        // update duration text only if valid
-        if (dur > 0) {
-            document.getElementById('t-dur').innerText = fmt(dur);
-        }
-
-        //update progress bar only if not dragging
-        if (!isDragging && dur > 0) {
-            const p = (cur / dur) * 100;
-            document.getElementById('progress-fill').style.width = p + "%";
+            if (dur > 0) {
+                const p = (cur / dur) * 100;
+                progressFill.style.width = p + "%";
+                document.getElementById('t-dur').innerText = fmt(dur);
+            }
         }
     };
 });
