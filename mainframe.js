@@ -2,25 +2,27 @@ const audio = document.getElementById('audio');
 const video = document.getElementById('video');
 const cover = document.getElementById('cover');
 const playIcon = document.getElementById('play-icon');
-const progressBar = document.getElementById('progress-bar'); // Neu definiert
-const progressFill = document.getElementById('progress-fill'); // Neu definiert
+const progressBar = document.getElementById('progress-bar'); // progress bar container
+const progressFill = document.getElementById('progress-fill'); // progress fill element
 
 let current = audio;
 let playlist = [];
 let index = -1;
 let isShuffle = false;
 let isLoop = false;
-let isDragging = false; // Wichtig für das Vorspulen
+let isDragging = false; // needed for progress bar dragging
 
 let audioCtx, analyser, sourceAudio, sourceVideo;
 
-let isVisualizerEnabled = true; // Standardmäßig an
+let isVisualizerEnabled = true; // on by default
+
+// --- INIT PLAYLIST ON LOAD ---
 
 window.addEventListener('pywebviewready', async () => {
     const files = await window.pywebview.api.scan_folder();
     if(files) renderPlaylist(files);
 
-    // --- LAUTSTÄRKE INITIALISIEREN ---
+    // --- INIT VOLUME SLIDER ---
     const volumeSlider = document.getElementById('volume-slider');
     if (volumeSlider) {
         audio.volume = volumeSlider.value;
@@ -32,7 +34,7 @@ window.addEventListener('pywebviewready', async () => {
         });
     }
 
-    // --- SUCHE INITIALISIEREN ---
+    // ---INITI SEARCH---
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -46,7 +48,7 @@ window.addEventListener('pywebviewready', async () => {
     }
 });
 
-/* --- START: NEUE PROGRESS BAR LOGIK (DRAG & DROP) --- */
+/*-- PROGRESS BAR LOGIC --*/
 if (progressBar) {
     progressBar.addEventListener('mousedown', (e) => {
         isDragging = true;
@@ -63,50 +65,49 @@ if (progressBar) {
 }
 
 function handleScrub(e) {
-    // Verhindert, dass Text markiert wird beim Ziehen
+    // prevent default behavior
     e.preventDefault(); 
 
-    // 1. Prüfen: Gibt es ein Medium und ist es bereit?
-    // readyState < 1 bedeutet: Keine Metadaten (Dauer) vorhanden
+    // test for valid media
     if (!current || current.readyState < 1) {
-        console.log("Fehler: Medium nicht bereit.");
+        console.log("Error: Media not ready.");
         return;
     }
 
     const dur = current.duration;
 
-    // 2. Prüfen: Ist die Dauer eine gültige Zahl?
+    // test for valid duration
     if (!dur || isNaN(dur) || !isFinite(dur)) {
-        console.log("Fehler: Dauer ungültig (noch nicht geladen).");
+        console.log("Error: Invalid duration (not yet loaded).");
         return;
     }
 
     const rect = progressBar.getBoundingClientRect();
     
-    // Position der Maus berechnen
+    // calculate click position
     let clickX = e.clientX - rect.left;
 
-    // Begrenzen (Clamping), damit Werte nicht negativ werden
+    // clamp limits
     if (clickX < 0) clickX = 0;
     if (clickX > rect.width) clickX = rect.width;
 
-    // Prozent berechnen
+    // calculate percentage and target time
     const percentage = clickX / rect.width;
     const targetTime = percentage * dur;
 
-    // 3. Sicherheits-Log in der Konsole (F12 drücken zum Sehen)
-    console.log(`Scrubbing: ${Math.round(percentage*100)}% -> Zeit: ${targetTime.toFixed(2)}s`);
+    // safety log open by F12
+    console.log(`Scrubbing: ${Math.round(percentage*100)}% -> Time: ${targetTime.toFixed(2)}s`);
 
-    // Zeit setzen - Nur wenn die Zielzeit eine echte, endliche Zahl ist
+    // time set and UI update
     if (Number.isFinite(targetTime)) {
         current.currentTime = targetTime;
         
-        // Optik sofort updaten
+        // optic update of progress bar and time text
         progressFill.style.width = (percentage * 100) + "%";
         document.getElementById('t-cur').innerText = fmt(targetTime);
     }
 }
-/* --- ENDE PROGRESS BAR LOGIK --- */
+// end of PROGRESS BAR LOGIC
 
 async function changeFolder() {
     const files = await window.pywebview.api.select_folder();
@@ -132,7 +133,7 @@ function renderPlaylist(files) {
             <img class="pl-cover-mini" src="${coverSrc}" onerror="this.src='alt.png'">
             <div class="pl-text-container">
                 <div class="pl-title">${f.name || f.filename}</div>
-                <div class="pl-artist">${f.artist || 'Unbekannter Interpret'}</div>
+                <div class="pl-artist">${f.artist || 'Unknown Artist'}</div>
             </div>
         </div>
         `;
@@ -160,7 +161,7 @@ function playMedia(meta) {
     cover.style.display = "none";
     video.style.display = "none";
 
-    document.getElementById('title').innerText = meta.title || "Unbekannter Titel";
+    document.getElementById('title').innerText = meta.title || "Unknown Title";
     document.getElementById('details').innerText = `${meta.artist || 'Inferno Artist'} | ${meta.album || 'No Album'}`;
 
     if(meta.type === 'audio') {
@@ -203,7 +204,7 @@ function playPrev() {
     selectTrack(index);
 }
 
-// BEREINIGTE UPDATE LOGIK (Nur noch EIN Block für alles)
+// --- MEDIA EVENTS ---
 [audio, video].forEach(m => {
     m.onended = () => { if(!isLoop) playNext(); else m.play(); };
     
@@ -211,11 +212,11 @@ function playPrev() {
         const dur = m.duration || 0;
         const cur = m.currentTime || 0;
         
-        // Update Zeit-Text
+        // update time text
         document.getElementById('t-cur').innerText = fmt(cur);
         document.getElementById('t-dur').innerText = fmt(dur);
 
-        // Update Balken nur, wenn User NICHT gerade zieht
+        // update progress bar only if not dragging
         if (!isDragging && dur > 0) {
             const p = (cur / dur) * 100;
             document.getElementById('progress-fill').style.width = p + "%";
@@ -223,7 +224,7 @@ function playPrev() {
     };
 });
 
-// --- ZEIT FORMATIERUNG ---
+// --- TIME FORMAT ---
 function fmt(s) {
     if (isNaN(s) || !isFinite(s) || s < 0) return "0:00";
     let m = Math.floor(s / 60);
@@ -287,9 +288,9 @@ function draw() {
 
     for (let i = 0; i < barCount; i++) {
         const barHeight = (dataArray[i] / 255) * height;
-        ctx.fillStyle = `rgb(${dataArray[i] + 100}, 0, 0)`;
+        ctx.fillStyle = `rgb(${dataArray[i] + 52}, 255, 11)`;  //Greenish color based on frequency
         ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
-        ctx.fillStyle = `rgba(255, 255, 255, 0.3)`;
+        ctx.fillStyle = `rgb(52, 255, 11)`; // Bright green for the cap
         ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, 2);
     }
 }
