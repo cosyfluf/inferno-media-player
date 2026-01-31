@@ -77,6 +77,7 @@ function handleScrub(e) {
     const dur = current.duration;
 
     // test for valid duration
+
     if (!dur || isNaN(dur) || !isFinite(dur)) {
         console.log("Error: Invalid duration (not yet loaded).");
         return;
@@ -161,8 +162,16 @@ function playMedia(meta) {
     cover.style.display = "none";
     video.style.display = "none";
 
+    // Set UI Text
     document.getElementById('title').innerText = meta.title || "Unknown Title";
     document.getElementById('details').innerText = `${meta.artist || 'Inferno Artist'} | ${meta.album || 'No Album'}`;
+    
+    // set duration text
+    if (meta.duration) {
+        document.getElementById('t-dur').innerText = fmt(meta.duration);
+    } else {
+        document.getElementById('t-dur').innerText = "0:00";
+    }
 
     if(meta.type === 'audio') {
         audio.src = meta.path;
@@ -209,14 +218,18 @@ function playPrev() {
     m.onended = () => { if(!isLoop) playNext(); else m.play(); };
     
     m.ontimeupdate = () => {
-        const dur = m.duration || 0;
+        // use m.duration only if valid
+        const dur = m.duration && isFinite(m.duration) && m.duration > 0 ? m.duration : 0;
         const cur = m.currentTime || 0;
         
-        // update time text
         document.getElementById('t-cur').innerText = fmt(cur);
-        document.getElementById('t-dur').innerText = fmt(dur);
 
-        // update progress bar only if not dragging
+        // update duration text only if valid
+        if (dur > 0) {
+            document.getElementById('t-dur').innerText = fmt(dur);
+        }
+
+        //update progress bar only if not dragging
         if (!isDragging && dur > 0) {
             const p = (cur / dur) * 100;
             document.getElementById('progress-fill').style.width = p + "%";
@@ -226,7 +239,7 @@ function playPrev() {
 
 // --- TIME FORMAT ---
 function fmt(s) {
-    if (isNaN(s) || !isFinite(s) || s < 0) return "0:00";
+    if (isNaN(s) || !isFinite(s) || s <= 0) return "0:00";
     let m = Math.floor(s / 60);
     let r = Math.floor(s % 60);
     return `${m}:${r < 10 ? '0' + r : r}`;
