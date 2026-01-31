@@ -53,17 +53,7 @@
         }
 
         #sidebar.hidden {
-            margin-left: -325px;
-        }
-
-        .burger {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            cursor: pointer;
-            fill: var(--red);
-            z-index: 200;
-            filter: drop-shadow(var(--glow));
+            margin-left: -322px;
         }
 
         .toggle-arrow {
@@ -90,6 +80,58 @@
             text-align: center;
             letter-spacing: 6px;
             text-shadow: var(--glow);
+        }
+
+        .sidebar-item {
+            padding: 15px 25px;
+            border-bottom: 1px solid #200;
+            cursor: pointer;
+            color: #888;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .sidebar-item:hover {
+            background: #200;
+            color: white;
+            border-left: 4px solid var(--red);
+        }
+
+
+        /* --- MENU --- */
+        #menu {
+            width: 320px;
+            background: #0a0000;
+            border-left: 2px solid var(--red);
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+
+            margin-right: -322px;
+        }
+        #menu.menu-open {
+            margin-right: 0px;
+        }
+
+        .menu-header {
+            padding: 70px 20px 20px;
+            color: var(--red);
+            font-weight: bold;
+            font-size: 26px;
+            text-align: center;
+            letter-spacing: 6px;
+            text-shadow: var(--glow);
+        }
+
+        .burger {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            cursor: pointer;
+            fill: var(--red);
+            z-index: 200;
+            filter: drop-shadow(var(--glow));
         }
 
         .menu-item {

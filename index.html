@@ -8,6 +8,7 @@
 </head>
 <body>
 
+<!----Playlist---->     
 <svg id="sidebar-toggle" class="toggle-arrow" viewBox="0 0 24 24" width="35" onclick="document.getElementById('sidebar').classList.toggle('hidden'), this.classList.toggle('collapsed');">
     <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
 </svg>
@@ -24,12 +25,10 @@
             </div>
         </div>
 
-        <div class="menu-item" onclick="changeFolder()">📁 Ordner wählen</div>
-        <div class="menu-item" onclick="manualFile()">📄 Datei öffnen</div>
-
         <div id="playlist"></div>
     </div>
 
+<!----media display---->
     <div id="main">
         <div id="media-display">
             <img id="cover" src="alt.png" style="display:none;" onerror="this.src='alt.png'; this.onerror=null;">
@@ -71,6 +70,20 @@
         </div>
         <div class="flames"></div>
     </div>
+
+<!----menu---->
+<svg class="burger" viewBox="0 0 24 24" width="35" onclick="document.getElementById('menu').classList.toggle('menu-open')">
+    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+</svg>
+    <div id="menu">
+        <div class="menu-header">MENU</div>
+            <div class="menu-controls"> 
+                <div class="menu-item" onclick="changeFolder()">📁 Ordner wählen</div>
+                <div class="menu-item" onclick="manualFile()">📄 Datei öffnen</div>
+            </div>
+        </div>
+    </div>
+
 
     <audio id="audio" crossorigin="auto"></audio>
 
