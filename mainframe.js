@@ -340,3 +340,24 @@ function draw() {
         ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, 2);
     }
 }
+
+// --- RANDOM SONG FUNCTION ---
+function randomSong() {
+    // 1. Check if there are any songs in the playlist
+    if (playlist && playlist.length > 0) {
+        
+        // 2. Generate a random index between 0 and playlist length
+        const randomIndex = Math.floor(Math.random() * playlist.length);
+        
+        // 3. Optional: If you want to avoid playing the SAME song again 
+        // (only if the playlist has more than 1 song)
+        if (playlist.length > 1 && randomIndex === index) {
+            return randomSong(); // Try again
+        }
+
+        // 4. Use your existing selectTrack function to fetch metadata and play
+        selectTrack(randomIndex);
+    } else {
+        console.log("Playlist is empty, cannot play random song.");
+    }
+}
