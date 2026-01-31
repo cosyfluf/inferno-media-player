@@ -1,5 +1,8 @@
 # 🔥 Inferno Media Player
 
+![Python](https://img.shields.io/badge/Made%20with-Python-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 **Inferno Media Player** is a lightweight, modern, and highly customizable desktop media player built with **Python** and **Web Technologies**. It combines the robust backend capabilities of Python with the sleek styling of modern CSS3 and JavaScript.
 
 The player features an aggressive "Inferno" dark theme, a real-time audio visualizer, and a dynamic theme engine that allows you to change the entire UI accent color on the fly.
@@ -68,6 +71,10 @@ python main.py
 ```
 
 ---
+
+## Screenshots
+
+![Demo](Screenshots/demo.png)
 
 ## 🎨 Customization
 
