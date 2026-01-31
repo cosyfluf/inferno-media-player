@@ -53,7 +53,7 @@
         }
 
         #sidebar.hidden {
-            margin-left: -320px;
+            margin-left: -325px;
         }
 
         .burger {
@@ -64,6 +64,22 @@
             fill: var(--red);
             z-index: 200;
             filter: drop-shadow(var(--glow));
+        }
+
+        .toggle-arrow {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            cursor: pointer;
+            fill: var(--red);
+            z-index: 200;
+            filter: drop-shadow(var(--glow));
+
+            transition: transform 0.4s ease-in-out;
+        }
+
+        .toggle-arrow.collapsed {
+            transform: rotate(180deg);
         }
 
         .sidebar-header {
