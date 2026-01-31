@@ -7,7 +7,7 @@
 
         body {
             background: var(--dark);
-            color: white;
+            color: rgb(255, 0, 0);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             display: flex;
@@ -35,7 +35,6 @@
             box-shadow: 0 0 10px var(--red);
         }
 
-        /* Für Firefox */
         #playlist {
             scrollbar-width: thin;
             scrollbar-color: #800000 #0a0000;
