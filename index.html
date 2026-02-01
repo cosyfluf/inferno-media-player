@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inferno Media Player</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<!----Playlist---->     
-<svg id="sidebar-toggle" class="toggle-arrow" viewBox="0 0 24 24" width="35" onclick="document.getElementById('sidebar').classList.toggle('hidden'), this.classList.toggle('collapsed');">
-    <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
-</svg>
+    <!----Playlist---->
+    <svg id="sidebar-toggle" class="toggle-arrow" viewBox="0 0 24 24" width="35"
+        onclick="document.getElementById('sidebar').classList.toggle('hidden'), this.classList.toggle('collapsed');">
+        <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" />
+    </svg>
 
     <div id="sidebar">
         <div class="sidebar-header">INFERNO</div>
-                <div class="menu-controls">
+        <div class="menu-controls">
             <div class="volume-box">
                 <span>🔊</span>
                 <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
@@ -28,7 +31,7 @@
         <div id="playlist"></div>
     </div>
 
-<!----media display---->
+    <!----media display---->
     <div id="main">
         <div id="media-display">
             <img id="cover" src="alt.png" style="display:none;" onerror="this.src='alt.png'; this.onerror=null;">
@@ -50,34 +53,39 @@
                 </div>
                 <span class="time" id="t-dur">-0:00</span>
             </div>
-            <div class="btns">   
-                <svg class="btn" id="shuffle" viewBox="0 0 24 24" onclick="isShuffle=!isShuffle; this.classList.toggle('active')">
-                    <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.45 20 9.5V4h-5.5zm.59 11.06l-1.42 1.41L18.59 21l1.41-1.41-5.06-5.06z"/>
+            <div class="btns">
+                <svg class="btn" id="shuffle" viewBox="0 0 24 24"
+                    onclick="isShuffle=!isShuffle; this.classList.toggle('active')">
+                    <path
+                        d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.45 20 9.5V4h-5.5zm.59 11.06l-1.42 1.41L18.59 21l1.41-1.41-5.06-5.06z" />
                 </svg>
                 <svg class="btn" viewBox="0 0 24 24" onclick="playPrev()">
-                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
                 </svg>
                 <svg class="btn play-btn" id="play-trigger" viewBox="0 0 24 24" onclick="togglePlay()">
-                    <path id="play-icon" d="M8 5v14l11-7z"/>
+                    <path id="play-icon" d="M8 5v14l11-7z" />
                 </svg>
                 <svg class="btn" viewBox="0 0 24 24" onclick="playNext()">
-                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
                 </svg>
-                <svg class="btn" id="loop" viewBox="0 0 24 24" onclick="isLoop=!isLoop; this.classList.toggle('active')">
-                    <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+                <svg class="btn" id="loop" viewBox="0 0 24 24"
+                    onclick="isLoop=!isLoop; this.classList.toggle('active')">
+                    <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" />
                 </svg>
                 <svg class="random" id="randomsong" viewBox="0 0 24 24" onclick="randomSong()">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm10 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-5-5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5-5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM7 19c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-                </svg> 
+                    <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm10 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-5-5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5-5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM7 19c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
+                </svg>
             </div>
         </div>
         <div class="flames"></div>
     </div>
 
-<!----menu---->
-<svg class="burger" viewBox="0 0 24 24" width="35" onclick="document.getElementById('menu').classList.toggle('menu-open')">
-    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-</svg>
+    <!----menu---->
+    <svg class="burger" viewBox="0 0 24 24" width="35"
+        onclick="document.getElementById('menu').classList.toggle('menu-open')">
+        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+    </svg>
     <div id="menu">
         <div class="menu-header">MENU</div>
 
@@ -87,13 +95,38 @@
                 <input type="checkbox" id="visualizer-toggle" checked onchange="toggleVisualizer(this.checked)">
                 <span class="slider"></span>
             </label>
-        </div> 
+        </div>
 
-            <div class="menu-controls"> 
-                <div class="menu-item" onclick="changeFolder()">📁 choose folder</div>
-                <div class="menu-item" onclick="manualFile()">📄 open file</div>        
+        <div class="menu-controls">
+            <div class="menu-item" onclick="changeFolder()">📁 choose folder</div>
+            <div class="menu-item" onclick="manualFile()">📄 open file</div>
+        </div>
+        <div class="menu-item" onclick="openDownloader()">🔥 Song Downloader</div>
+        <div id="dl-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeDownloader()">&times;</span>
+                <h2>INFERNO DOWNLOADER</h2>
+                <div class="dl-search-group">
+                    <input type="text" id="dl-input" placeholder="Enter song name or YouTube link...">
+                    <button onclick="searchYT()">Search</button>
+                </div>
+
+                <div id="dl-results"></div>
+
+                <div id="dl-step-2" style="display:none;">
+                    <p id="selected-song-name"></p>
+                    <label class="container">Detailed Version (Spotify Metadata)
+                        <input type="checkbox" id="dl-spotify">
+                        <span class="checkmark"></span>
+                    </label>
+                    <button class="dl-confirm-btn" id="start-dl-btn">DOWNLOAD NOW</button>
+                </div>
+
+                <div id="dl-status"></div>
             </div>
         </div>
+    </div>
+
     </div>
 
 
@@ -101,4 +134,5 @@
 
     <script src="mainframe.js"></script>
 </body>
+
 </html>
