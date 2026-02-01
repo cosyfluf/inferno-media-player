@@ -426,7 +426,7 @@ async function startDownload() {
     const response = await window.pywebview.api.download_track(selectedYTItem.url, useSpotify);
 
     if(response.status === "success") {
-        status.innerText = "🔥 Download finished: " + response.file;
+        status.innerText = "🔥 Download finished: " + response.filename;
         // Automatic Refresh
         const newFiles = await window.pywebview.api.scan_folder();
         if(newFiles) renderPlaylist(newFiles);
