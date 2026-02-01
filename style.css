@@ -582,6 +582,7 @@
             background: var(--dark-red);
             color: white;
             border: 1px solid var(--red);
+            border-radius: 10px;
             padding: 10px 20px;
             cursor: pointer;
             font-weight: bold;
@@ -591,6 +592,8 @@
             max-height: 300px;
             overflow-y: auto;
             margin-bottom: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: #800000 #0a0000;
         }
 
         .dl-result-item {
@@ -628,4 +631,41 @@
             cursor: pointer;
             font-size: 16px;
             user-select: none;
+        }
+
+        .checkbox {
+            appearance: none;
+            /* Remove default browser style */
+            width: 24px;
+            height: 24px;
+            border: 2px solid #400;
+            border-radius: 6px;
+            background: #0a0000;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hover state */
+        .checkbox:hover {
+            border-color: var(--red);
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
+        }
+
+        /* Checked state */
+        .checkbox:checked {
+            background: var(--red);
+            border-color: var(--red);
+            box-shadow: var(--glow);
+        }
+
+        /* Checkmark icon inside */
+        .checkbox:checked::after {
+            content: '✔';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
         }
