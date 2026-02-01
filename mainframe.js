@@ -361,3 +361,76 @@ function randomSong() {
         console.log("Playlist is empty, cannot play random song.");
     }
 }
+
+// --- DOWNLOADER LOGIC ---
+
+function openDownloader() {
+    document.getElementById('dl-modal').style.display = 'block';
+}
+
+function closeDownloader() {
+    document.getElementById('dl-modal').style.display = 'none';
+}
+
+async function searchYT() {
+    const query = document.getElementById('dl-input').value;
+    if(!query) return;
+
+    const status = document.getElementById('dl-status');
+    const resultsDiv = document.getElementById('dl-results');
+    
+    status.innerText = "Searching YouTube...";
+    resultsDiv.innerHTML = "";
+    document.getElementById('dl-step-2').style.display = 'none';
+
+    const results = await window.pywebview.api.search_song(query);
+    
+    if(results.error) {
+        status.innerText = "Error: " + results.error;
+        return;
+    }
+
+    status.innerText = "Select a version:";
+    results.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'dl-result-item';
+        div.innerHTML = `
+            <img src="${item.thumbnail}">
+            <div>
+                <div style="font-weight:bold">${item.title}</div>
+                <div style="font-size:0.8em; color:#888">${Math.floor(item.duration/60)}:${(item.duration%60).toString().padStart(2,'0')}</div>
+            </div>
+        `;
+        div.onclick = () => selectForDownload(item);
+        resultsDiv.appendChild(div);
+    });
+}
+
+let selectedYTItem = null;
+
+function selectForDownload(item) {
+    selectedYTItem = item;
+    document.getElementById('selected-song-name').innerText = "Selected: " + item.title;
+    document.getElementById('dl-step-2').style.display = 'block';
+    
+    document.getElementById('start-dl-btn').onclick = startDownload;
+}
+
+async function startDownload() {
+    const useSpotify = document.getElementById('dl-spotify').checked;
+    const status = document.getElementById('dl-status');
+    
+    status.innerText = "Downloading and converting... please wait (Retry enabled automatically)";
+    document.getElementById('dl-step-2').style.display = 'none';
+
+    const response = await window.pywebview.api.download_track(selectedYTItem.url, useSpotify);
+
+    if(response.status === "success") {
+        status.innerText = "🔥 Download finished: " + response.file;
+        // Automatic Refresh
+        const newFiles = await window.pywebview.api.scan_folder();
+        if(newFiles) renderPlaylist(newFiles);
+    } else {
+        status.innerText = "❌ Error: " + response.message;
+    }
+}
