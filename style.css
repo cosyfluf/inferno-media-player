@@ -3,6 +3,8 @@
             --dark-red: #800000;
             --dark: #050000;
             --glow: 0 0 20px rgba(255, 0, 0, 0.6);
+            /* --dynamic-bright will be set dynamically via JS */
+            /* --dynamic will be set dynamically via JS */
         }
 
         body {
@@ -73,7 +75,7 @@
 
         .sidebar-header {
             padding: 70px 20px 20px;
-            color: var(--red);
+            color: var(--dynamic-bright);
             font-weight: bold;
             font-size: 26px;
             text-align: center;
@@ -267,11 +269,11 @@
         }
 
         .playlist-item.active .pl-title {
-            color: var(--red);
+            color: var(--dynamic-bright);
         }
 
         .playlist-item:hover {
-            color: var(--red);
+            color: var(--dynamic-bright);
             padding-left: 15px;
         }
 
@@ -581,7 +583,7 @@
         .dl-confirm-btn {
             background: var(--dark-red);
             color: white;
-            border: 1px solid var(--red);
+            border: 1px solid var(--dynamic-bright);
             border-radius: 10px;
             padding: 10px 20px;
             cursor: pointer;
@@ -619,7 +621,7 @@
         #dl-status {
             margin-top: 15px;
             font-style: italic;
-            color: var(--red);
+            color: var(--dynamic-bright);
         }
 
         /* Checkbox Style */

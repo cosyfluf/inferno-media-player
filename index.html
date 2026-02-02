@@ -34,7 +34,7 @@
     <!----media display---->
     <div id="main">
         <div id="media-display">
-            <img id="cover" src="alt.png" style="display:none;" onerror="this.src='alt.png'; this.onerror=null;">
+            <img id="cover" src="alt.png" crossorigin="anonymous" style="display:none;" onerror="this.src='alt.png'; this.onerror=null;">
             <video id="video" style="display:none;" crossorigin="anonymous"></video>
         </div>
 
@@ -90,9 +90,17 @@
         <div class="menu-header">MENU</div>
 
         <div class="menu-item toggle-item">
+            <!-- Visualizer Toggle -->
             <span>Visualizer</span>
             <label class="switch">
                 <input type="checkbox" id="visualizer-toggle" checked onchange="toggleVisualizer(this.checked)">
+                <span class="slider"></span>
+            </label>
+
+            <!-- Dynamic Color Toggle -->
+            <span>Dynamic color</span>
+            <label class="switch">
+                <input type="checkbox" id="dynamic-color-toggle" checked onchange="toggleDynamicColor(this.checked)">
                 <span class="slider"></span>
             </label>
         </div>

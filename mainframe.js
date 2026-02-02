@@ -16,6 +16,9 @@ let audioCtx, analyser, sourceAudio, sourceVideo;
 
 let isVisualizerEnabled = true; // on by default
 
+let isDynamicColorEnabled = true; // Global state for dynamic colors
+let currentThemeColor = { r: 255, g: 0, b: 0 }; // Default Inferno Red
+
 // --- INIT PLAYLIST ON LOAD ---
 
 window.addEventListener('pywebviewready', async () => {
@@ -174,22 +177,33 @@ function playMedia(meta) {
     document.getElementById('title').innerText = meta.title || "Unknown Title";
     document.getElementById('details').innerText = `${meta.artist || 'Inferno Artist'} | ${meta.album || 'No Album'}`;
     
-    // set duration text
-    if (meta.duration) {
-        document.getElementById('t-dur').innerText = fmt(meta.duration);
-    } else {
-        document.getElementById('t-dur').innerText = "0:00";
-    }
+    // Set duration text
+    document.getElementById('t-dur').innerText = meta.duration ? fmt(meta.duration) : "0:00";
 
     if(meta.type === 'audio') {
         audio.src = meta.path;
         current = audio;
         cover.src = meta.cover ? meta.cover : 'alt.png';
         cover.style.display = "block";
+
+        // --- NEW: DYNAMIC COLOR DETECTION ---
+        cover.onload = async () => {
+            if (isDynamicColorEnabled) {
+                const colorData = await getAverageColor(cover);
+                // Update global variable for visualizer
+                currentThemeColor = { r: colorData.r, g: colorData.g, b: colorData.b };
+                // Update CSS variables for UI glow/borders
+                document.documentElement.style.setProperty('--red', colorData.hex);
+            }
+        };
     } else {
         video.src = meta.path;
         current = video;
         video.style.display = "block";
+
+        // Reset theme to default Red for videos
+        currentThemeColor = { r: 255, g: 0, b: 0 };
+        document.documentElement.style.setProperty('--red', '#ff0000');
     }
     
     current.load();
@@ -311,8 +325,8 @@ function setupVisualizer(elem) {
     } catch(e) {}
 }
 
+// Draw function for visualizer
 function draw() {
-
     if (!isVisualizerEnabled) return;
 
     requestAnimationFrame(draw);
@@ -329,14 +343,23 @@ function draw() {
     const height = canvas.height;
 
     ctx.clearRect(0, 0, width, height);
+    
+    // Determine which color to use: Current Album Color or Default Red
+    const theme = isDynamicColorEnabled ? currentColor : { r: 255, g: 0, b: 0 };
+    const { r, g, b } = theme;
+
     const barCount = 60;
     const barWidth = (width / barCount);
 
     for (let i = 0; i < barCount; i++) {
         const barHeight = (dataArray[i] / 255) * height;
-        ctx.fillStyle = `rgb(${dataArray[i] + 52}, 255, 11)`;  //Greenish color based on frequency
+
+        // Main Bar
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`; 
         ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
-        ctx.fillStyle = `rgb(52, 255, 11)`; // Bright green for the cap
+
+        // Cap (Top line) - slightly brighter
+        ctx.fillStyle = `rgb(${Math.min(r + 50, 255)}, ${Math.min(g + 50, 255)}, ${Math.min(b + 50, 255)})`;
         ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, 2);
     }
 }
@@ -408,6 +431,7 @@ async function searchYT() {
 
 let selectedYTItem = null;
 
+// STEP 2: SELECTED ITEM
 function selectForDownload(item) {
     selectedYTItem = item;
     document.getElementById('selected-song-name').innerText = "Selected: " + item.title;
@@ -433,4 +457,166 @@ async function startDownload() {
     } else {
         status.innerText = "❌ Error: " + response.message;
     }
+}
+
+// GET COVER COLOR
+// Global state to track the current color and animation frame
+let currentColor = { r: 255, g: 0, b: 0 }; 
+let colorAnimationId = null;
+
+/**
+ * Smoothly transitions the --red CSS variable to a new color using JS.
+ * @param {Object} target - The destination RGB values {r, g, b}.
+ * @param {number} duration - Transition duration in milliseconds.
+ */
+function animateColorTransition(target, duration = 800) {
+    const start = { ...currentColor };
+    const startTime = performance.now();
+
+    // Cancel any existing animation to prevent flickering
+    if (colorAnimationId) cancelAnimationFrame(colorAnimationId);
+
+    function update(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Cubic ease-out function to make the transition feel natural
+        const ease = 1 - Math.pow(1 - progress, 3);
+
+        // Calculate intermediate RGB values
+        const r = Math.round(start.r + (target.r - start.r) * ease);
+        const g = Math.round(start.g + (target.g - start.g) * ease);
+        const b = Math.round(start.b + (target.b - start.b) * ease);
+
+        // Update current state
+        currentColor = { r, g, b };
+
+        // Convert to HEX and apply to CSS variable
+        const hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        document.documentElement.style.setProperty('--dynamic', hex);
+
+        // Continue animation if not finished
+        if (progress < 1) {
+            colorAnimationId = requestAnimationFrame(update);
+        }
+    }
+
+    colorAnimationId = requestAnimationFrame(update);
+}
+
+/**
+ * Extracts the average color and triggers the smooth transition.
+ */
+function getAverageColor(imgElement) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 64; 
+        canvas.height = 64;
+        ctx.drawImage(imgElement, 0, 0, 64, 64);
+
+        try {
+            const imageData = ctx.getImageData(0, 0, 64, 64).data;
+            let r = 0, g = 0, b = 0;
+
+            for (let i = 0; i < imageData.length; i += 4) {
+                r += imageData[i];
+                g += imageData[i + 1];
+                b += imageData[i + 2];
+            }
+
+            const count = imageData.length / 4;
+            const result = {
+                r: Math.floor(r / count),
+                g: Math.floor(g / count),
+                b: Math.floor(b / count)
+            };
+            
+            // Trigger the smooth transition instead of setting it instantly
+            animateColorTransition(result);
+            
+            resolve(result);
+        } catch (e) {
+            const fallback = { r: 255, g: 0, b: 0 };
+            animateColorTransition(fallback);
+            resolve(fallback);
+        }
+    });
+}
+
+function toggleDynamicColor(isEnabled) {
+    isDynamicColorEnabled = isEnabled;
+    
+    if (!isEnabled) {
+        // Smoothly transition back to Inferno Red
+        animateColorTransition({ r: 255, g: 0, b: 0 });
+    } else {
+        if (cover.style.display !== "none") {
+            cover.onload(); 
+        }
+    }
+}
+
+/* --- DYNAMIC BRIGHTNESS ADJUSTMENT FOR UI --- */
+let brightAnimId = null;
+let currentBrightState = { r: 255, g: 0, b: 0 }; // Internal tracker for smooth transition
+
+/**
+ * @param {Object} inputRGB - The raw {r, g, b} color (e.g., from your average color extractor).
+ */
+function processDynamicBright(inputRGB) {
+    // 1. Calculate perceived brightness (Luminance)
+    const luminance = (0.299 * inputRGB.r + 0.587 * inputRGB.g + 0.114 * inputRGB.b);
+    
+    // Target brightness threshold (0-255). 180 ensures it's clearly visible and "popping".
+    const minBrightness = 180;
+    
+    let target = { ...inputRGB };
+
+    // 2. If the color is too dark, lift it towards white
+    if (luminance < minBrightness) {
+        // Calculate how much we need to boost (0.0 to 1.0)
+        const boostFactor = (minBrightness - luminance) / 255;
+        
+        // Blend with white (255) to increase brightness while keeping the hue
+        target.r = Math.round(target.r + (255 - target.r) * boostFactor);
+        target.g = Math.round(target.g + (255 - target.g) * boostFactor);
+        target.b = Math.round(target.b + (255 - target.b) * boostFactor);
+    }
+
+    // 3. Smooth Transition Logic
+    const start = { ...currentBrightState };
+    const startTime = performance.now();
+    const duration = 1000; // 1 second for a premium smooth feel
+
+    if (brightAnimId) cancelAnimationFrame(brightAnimId);
+
+    function animate(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        
+        // Cubic Out Easing: Smooth deceleration
+        const ease = 1 - Math.pow(1 - progress, 3);
+
+        // Interpolate RGB values
+        currentBrightState.r = Math.round(start.r + (target.r - start.r) * ease);
+        currentBrightState.g = Math.round(start.g + (target.g - start.g) * ease);
+        currentBrightState.b = Math.round(start.b + (target.b - start.b) * ease);
+
+        // Convert to HEX
+        const hex = "#" + (
+            (1 << 24) + 
+            (currentBrightState.r << 16) + 
+            (currentBrightState.g << 8) + 
+            currentBrightState.b
+        ).toString(16).slice(1);
+
+        // 4. Output as --dynamic-bright
+        document.documentElement.style.setProperty('--dynamic-bright', hex);
+
+        if (progress < 1) {
+            brightAnimId = requestAnimationFrame(animate);
+        }
+    }
+
+    brightAnimId = requestAnimationFrame(animate);
 }
