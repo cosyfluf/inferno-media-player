@@ -316,6 +316,8 @@ function setupVisualizer(elem) {
 }
 
 // Draw function for visualizer
+let hueOffset = 0; // Variable außerhalb der Funktion deklarieren
+
 function draw() {
     if (!isVisualizerEnabled) return;
 
@@ -334,24 +336,114 @@ function draw() {
 
     ctx.clearRect(0, 0, width, height);
     
-    // Determine which color to use: Current Album Color or Default Red
-    const theme = isDynamicColorEnabled ? currentColor : { r: 255, g: 0, b: 0 };
-    const { r, g, b } = theme;
-
     const barCount = 60;
     const barWidth = (width / barCount);
+
+    // Animation: Erhöhe den Farb-Offset bei jedem Frame
+    hueOffset += 1; 
 
     for (let i = 0; i < barCount; i++) {
         const barHeight = (dataArray[i] / 255) * height;
 
-        // Main Bar
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`; 
+        // BERECHNUNG DER FARBE
+        // (i * 2) sorgt dafür, dass die Balken unterschiedliche Farben haben
+        // + hueOffset sorgt für die Bewegung des Farblaufs
+        const hue = (i * 4 + hueOffset) % 360; 
+        
+        // Hauptbalken mit HSL (Farbton, Sättigung, Helligkeit)
+        ctx.fillStyle = `hsl(${hue}, 80%, 50%)`; 
         ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
 
-        // Cap (Top line) - slightly brighter
-        ctx.fillStyle = `rgb(${Math.min(r + 50, 255)}, ${Math.min(g + 50, 255)}, ${Math.min(b + 50, 255)})`;
+        // Cap (Oben) - etwas heller (L-Wert erhöht)
+        ctx.fillStyle = `hsl(${hue}, 80%, 70%)`;
         ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, 2);
     }
+}
+
+// Persistent variables for animation
+let capPositions = []; 
+let flowOffset = 0;    
+const gravity = 0.8;   
+
+function draw() {
+    if (!isVisualizerEnabled) return;
+    requestAnimationFrame(draw);
+    if (!analyser) return;
+
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    analyser.getByteFrequencyData(dataArray);
+
+    ctx.clearRect(0, 0, width, height);
+    
+    // 1. Determine base theme color
+    const theme = isDynamicColorEnabled ? currentColor : { r: 255, g: 0, b: 0 };
+    
+    // 2. Convert RGB to HSL to allow for easy animation of the "flow"
+    // This helper logic allows us to keep the album's color identity
+    const hsl = rgbToHsl(theme.r, theme.g, theme.b);
+
+    // 3. Define bar properties
+    const barWidth = 3; 
+    const barCount = Math.floor(width / barWidth);
+    
+    // Increment the flow animation over time
+    flowOffset += 0.75;
+
+    for (let i = 0; i < barCount; i++) {
+        // Map audio data to bars (using every nth sample to fill the width)
+        const dataIndex = Math.floor((i / barCount) * bufferLength);
+        let barHeight = (dataArray[dataIndex] / 255) * height;
+
+        // 4. Gravity Caps Logic
+        if (capPositions[i] === undefined || barHeight > capPositions[i]) {
+            capPositions[i] = barHeight;
+        } else {
+            capPositions[i] -= gravity;
+        }
+
+        // 5. Create "Flow" effect based on the Theme Color
+        // We shift the Hue slightly (+/- 20 degrees) and vary the Lightness
+        const animatedHue = (hsl.h + (i * 1.5) + flowOffset) % 360;
+        const brightness = 40 + Math.sin(flowOffset * 0.05 + i * 0.1) * 10;
+        
+        const mainColor = `hsl(${animatedHue}, ${hsl.s}%, ${hsl.l}%)`;
+        const capColor = `hsl(${animatedHue}, ${hsl.s}%, 80%)`;
+
+        // 6. Draw the 3px Bars
+        ctx.fillStyle = mainColor;
+        // barWidth - 1 creates a tiny gap between bars for better definition
+        ctx.fillRect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
+
+        // 7. Draw the Caps
+        ctx.fillStyle = capColor;
+        ctx.fillRect(i * barWidth, height - capPositions[i] - 2, barWidth - 1, 2);
+    }
+}
+// HELPER: RGB TO HSL CONVERSION
+function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+        h = s = 0; 
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
 // --- RANDOM SONG FUNCTION ---
