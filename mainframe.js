@@ -186,16 +186,6 @@ function playMedia(meta) {
         cover.src = meta.cover ? meta.cover : 'alt.png';
         cover.style.display = "block";
 
-        // --- NEW: DYNAMIC COLOR DETECTION ---
-        cover.onload = async () => {
-            if (isDynamicColorEnabled) {
-                const colorData = await getAverageColor(cover);
-                // Update global variable for visualizer
-                currentThemeColor = { r: colorData.r, g: colorData.g, b: colorData.b };
-                // Update CSS variables for UI glow/borders
-                document.documentElement.style.setProperty('--red', colorData.hex);
-            }
-        };
     } else {
         video.src = meta.path;
         current = video;
@@ -459,6 +449,17 @@ async function startDownload() {
     }
 }
 
+     // --- NEW: DYNAMIC COLOR DETECTION ---
+    cover.onload = async () => {
+        if (isDynamicColorEnabled) {
+            const colorData = await getAverageColor(cover);
+            // Update global variable for visualizer
+            currentThemeColor = { r: colorData.r, g: colorData.g, b: colorData.b };
+            // Update CSS variables for UI glow/borders
+            document.documentElement.style.setProperty('none', colorData.hex);
+        }
+    };
+
 // GET COVER COLOR
 // Global state to track the current color and animation frame
 let currentColor = { r: 255, g: 0, b: 0 }; 
@@ -611,7 +612,7 @@ function processDynamicBright(inputRGB) {
         ).toString(16).slice(1);
 
         // 4. Output as --dynamic-bright
-        document.documentElement.style.setProperty('--dynamic-bright', hex);
+        document.documentElement.style.setProperty('--red', hex);
 
         if (progress < 1) {
             brightAnimId = requestAnimationFrame(animate);
