@@ -226,6 +226,13 @@ function togglePlay() {
         playIcon.setAttribute('d', "M8 5v14l11-7z");
     }
 }
+document.addEventListener('keydown', (event) => {
+        if (event.code === 'Space' && event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
+            event.preventDefault();
+            togglePlay();
+        }
+    });
+
 
 function playNext() {
     if (playlist.length === 0) return;
@@ -330,7 +337,7 @@ function setupVisualizer(elem) {
 }
 
 // Draw function for visualizer
-let hueOffset = 0; // Variable außerhalb der Funktion deklarieren
+let hueOffset = 0;
 
 function draw() {
     if (!isVisualizerEnabled) return;
@@ -353,22 +360,16 @@ function draw() {
     const barCount = 60;
     const barWidth = (width / barCount);
 
-    // Animation: Erhöhe den Farb-Offset bei jedem Frame
     hueOffset += 1; 
 
     for (let i = 0; i < barCount; i++) {
         const barHeight = (dataArray[i] / 255) * height;
 
-        // BERECHNUNG DER FARBE
-        // (i * 2) sorgt dafür, dass die Balken unterschiedliche Farben haben
-        // + hueOffset sorgt für die Bewegung des Farblaufs
         const hue = (i * 4 + hueOffset) % 360; 
         
-        // Hauptbalken mit HSL (Farbton, Sättigung, Helligkeit)
         ctx.fillStyle = `hsl(${hue}, 80%, 50%)`; 
         ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
 
-        // Cap (Oben) - etwas heller (L-Wert erhöht)
         ctx.fillStyle = `hsl(${hue}, 80%, 70%)`;
         ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, 2);
     }
@@ -490,7 +491,14 @@ function openDownloader() {
 function closeDownloader() {
     document.getElementById('dl-modal').style.display = 'none';
 }
+document.addEventListener('keydown', (event) => {
+        if (event.code === 'Escape' && event.target.tagName !== 'INPUT' && event.target.tagName !== 'TEXTAREA') {
+            event.preventDefault();
+            closeDownloader();
+        }
+    });
 
+    // STEP 1: SEARCH YT
 async function searchYT() {
     const query = document.getElementById('dl-input').value;
     if(!query) return;
@@ -524,6 +532,12 @@ async function searchYT() {
         resultsDiv.appendChild(div);
     });
 }
+document.getElementById('dl-input').addEventListener('keydown', (event) => {
+        if (event.code === 'Enter') {
+            searchYT();
+        }
+    });
+
 
 let selectedYTItem = null;
 
