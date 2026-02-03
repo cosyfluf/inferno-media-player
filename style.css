@@ -671,3 +671,28 @@
             font-size: 14px;
             font-weight: bold;
         }
+
+        /* --- SHOW IN FOLDER ICON --- */
+        .show-folder-btn {
+            width: 20px;
+            height: 20px;
+            fill: #666;
+            margin-left: 8px;
+            padding: 6px;
+            border-radius: 5px;
+            transition: 0.2s;
+            opacity: 0;
+            /* Hidden until hover */
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .playlist-item:hover .show-folder-btn {
+            opacity: 1;
+        }
+
+        .show-folder-btn:hover {
+            fill: var(--red);
+            background: rgba(255, 0, 0, 0.1);
+            transform: scale(1.1);
+        }
