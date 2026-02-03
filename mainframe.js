@@ -400,7 +400,6 @@ function draw() {
     const theme = isDynamicColorEnabled ? currentColor : { r: 255, g: 0, b: 0 };
     
     // 2. Convert RGB to HSL to allow for easy animation of the "flow"
-    // This helper logic allows us to keep the album's color identity
     const hsl = rgbToHsl(theme.r, theme.g, theme.b);
 
     // 3. Define bar properties
@@ -423,7 +422,6 @@ function draw() {
         }
 
         // 5. Create "Flow" effect based on the Theme Color
-        // We shift the Hue slightly (+/- 20 degrees) and vary the Lightness
         const animatedHue = (hsl.h + (i * 1.5) + flowOffset) % 360;
         const brightness = 40 + Math.sin(flowOffset * 0.05 + i * 0.1) * 10;
         
@@ -469,8 +467,7 @@ function randomSong() {
         // 2. Generate a random index between 0 and playlist length
         const randomIndex = Math.floor(Math.random() * playlist.length);
         
-        // 3. Optional: If you want to avoid playing the SAME song again 
-        // (only if the playlist has more than 1 song)
+        // 3. Avoid repeating the same song if possible
         if (playlist.length > 1 && randomIndex === index) {
             return randomSong(); // Try again
         }
