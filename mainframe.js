@@ -140,6 +140,9 @@ function renderPlaylist(files) {
     
     container.innerHTML = playlist.map((f, i) => {
         const coverSrc = f.cover && f.cover !== "" ? f.cover : 'alt.png';
+        // Escape backslashes for the string path to prevent JS errors
+        const escapedPath = f.path.replace(/\\/g, '\\\\');
+        
         return `
         <div class="playlist-item" id="item-${i}" onclick="selectTrack(${i})">
             <img class="pl-cover-mini" src="${coverSrc}" onerror="this.src='alt.png'">
@@ -147,9 +150,20 @@ function renderPlaylist(files) {
                 <div class="pl-title">${f.name || f.filename}</div>
                 <div class="pl-artist">${f.artist || 'Unknown Artist'}</div>
             </div>
+            <svg class="show-folder-btn" viewBox="0 0 24 24" title="Show in folder" 
+                onclick="showInFolder('${escapedPath}'); event.stopPropagation();">
+                <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
+            </svg>
         </div>
         `;
     }).join('');
+}
+
+// New function to call the Python API
+async function showInFolder(path) {
+    if (window.pywebview && window.pywebview.api) {
+        await window.pywebview.api.show_in_folder(path);
+    }
 }
 
 async function selectTrack(i) {

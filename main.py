@@ -14,6 +14,8 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import threading
 import time
 import requests
+import platform
+import subprocess
 
 # --- DOWNLOADER LIBRARIES ---
 import yt_dlp
@@ -285,6 +287,15 @@ class Api:
                 if m: metadata["duration"] = m.info.length
         except: pass
         return metadata
+    # --- OPEN IN FOLDER ---
+    def show_in_folder(self, path):
+        if platform.system() == "Windows":
+            # Opens the folder and selects the file
+            subprocess.run(['explorer', '/select,', os.path.normpath(path)])
+        elif platform.system() == "Darwin": # macOS
+            subprocess.run(['open', '-R', path])
+        else: # Linux
+            subprocess.run(['xdg-open', os.path.dirname(path)])
 
 def run():
     global window
