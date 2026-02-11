@@ -10,12 +10,13 @@ from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4
 from pathlib import Path
 import urllib.parse
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 import threading
 import time
 import requests
 import platform
 import subprocess
+from pypresence import Presence
 
 # --- DOWNLOADER LIBRARIES ---
 import yt_dlp
@@ -24,23 +25,59 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 # --- CONFIGURATION ---
 CONFIG_FILE = Path(__file__).parent / "config.json"
-window = None  # Global reference for JS communication
+window = None 
 
-# --- MEDIA SERVER (Supports Range for scrubbing) ---
+# --- DISCORD MANAGER ---
+class DiscordManager:
+    """Manages Discord Rich Presence communication in a non-blocking way."""
+    def __init__(self, client_id):
+        self.client_id = client_id
+        self.rpc = None
+        self.enabled = False
+        if client_id and client_id != "YOUR_DISCORD_ID":
+            self.enabled = True
+
+    def connect(self):
+        """Attempts to connect to the Discord client."""
+        try:
+            if not self.rpc:
+                self.rpc = Presence(self.client_id)
+                self.rpc.connect()
+        except:
+            self.rpc = None
+
+    def update(self, title, artist, cover_url=None):
+        """Updates the Discord status with optional album cover URL."""
+        if not self.enabled: return
+        def _th():
+            try:
+                self.connect()
+                if self.rpc:
+                    # Discord needs a direct URL for large_image to display external covers
+                    img = cover_url if cover_url else "app_logo"
+                    self.rpc.update(
+                        details=f"🎵 {title}",
+                        state=f"by {artist}",
+                        large_image=img,
+                        large_text="Inferno Media Player",
+                        start=time.time()
+                    )
+            except: pass
+        threading.Thread(target=_th, daemon=True).start()
+
+# --- MEDIA SERVER ---
 class MediaHandler(SimpleHTTPRequestHandler):
+    """Handles local file streaming with support for Range requests."""
     def do_GET(self):
         parsed_url = urllib.parse.urlparse(self.path)
         if parsed_url.path == '/media':
             params = urllib.parse.parse_qs(parsed_url.query)
             file_path = params.get('path', [None])[0]
-            
             if file_path and os.path.exists(file_path):
                 file_size = os.path.getsize(file_path)
                 range_header = self.headers.get('Range', None)
-                
                 byte_start = 0
                 byte_end = file_size - 1
-
                 if range_header:
                     range_match = range_header.strip().split('=')[-1]
                     parts = range_match.split('-')
@@ -50,43 +87,40 @@ class MediaHandler(SimpleHTTPRequestHandler):
                     self.send_header('Content-Range', f'bytes {byte_start}-{byte_end}/{file_size}')
                 else:
                     self.send_response(200)
-
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.send_header('Content-Type', 'audio/mpeg' if file_path.endswith('.mp3') else 'video/mp4')
                 self.send_header('Content-Length', str(byte_end - byte_start + 1))
                 self.send_header('Accept-Ranges', 'bytes')
                 self.end_headers()
-
                 with open(file_path, 'rb') as f:
                     f.seek(byte_start)
                     self.wfile.write(f.read(byte_end - byte_start + 1))
                 return
         self.send_error(404)
-
     def log_message(self, format, *args): pass
 
 def start_server():
-    server = HTTPServer(('127.0.0.1', 8080), MediaHandler)
+    """Starts the threaded HTTP server."""
+    server = ThreadingHTTPServer(('127.0.0.1', 8080), MediaHandler)
     server.serve_forever()
 
 # --- API FOR FRONTEND ---
 class Api:
     def __init__(self):
         self.port = 8080
-        # Use underscore prefixes to hide these objects from pywebview's JS API inspector
-        # This prevents the 'redirect_uri' error
         self._config = self.load_config()
         self.current_path = self._config.get("default_path", str(Path.home() / "Music"))
         self._sp = None 
+        self._discord = DiscordManager(self._config.get("discord_client_id", "YOUR_DISCORD_ID"))
         self.init_spotify()
 
     def load_config(self):
-        """Loads config from JSON or creates a default one."""
         if not CONFIG_FILE.exists():
             default = {
                 "default_path": str(Path.home() / "Music"),
                 "spotify_client_id": "YOUR_ID",
-                "spotify_client_secret": "YOUR_SECRET"
+                "spotify_client_secret": "YOUR_SECRET",
+                "discord_client_id": "YOUR_DISCORD_ID"
             }
             self.save_config_dict(default)
             return default
@@ -97,137 +131,86 @@ class Api:
             return {"default_path": str(Path.home() / "Music")}
 
     def save_config_dict(self, config_dict):
-        """Saves configuration dictionary to file."""
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(config_dict, f, indent=4)
 
     def save_config(self, path):
-        """Updates the default folder path."""
         self._config["default_path"] = path
         self.save_config_dict(self._config)
 
     def init_spotify(self):
-        """Initializes Spotify client if credentials are provided."""
         cid = self._config.get("spotify_client_id")
         secret = self._config.get("spotify_client_secret")
         if cid and secret and "YOUR_" not in cid:
             try:
                 auth_manager = SpotifyClientCredentials(client_id=cid, client_secret=secret)
                 self._sp = spotipy.Spotify(auth_manager=auth_manager)
-            except Exception as e:
-                print(f"Spotify Init Error: {e}")
+            except: pass
 
-    # --- DOWNLOADER CORE ---
+    def get_spotify_cover_url(self, title, artist):
+        """Fetches a public image URL from Spotify for Discord."""
+        if not self._sp: return None
+        try:
+            query = f"track:{title} artist:{artist}"
+            res = self._sp.search(q=query, limit=1, type='track')
+            if res['tracks']['items']:
+                return res['tracks']['items'][0]['album']['images'][0]['url']
+        except: pass
+        return None
 
     def _progress_hook(self, d):
-        """Updates the frontend progress bar during download."""
         if d['status'] == 'downloading':
             p = d.get('_percent_str', '0%').replace('%', '').strip()
             try:
-                if window:
-                    window.evaluate_js(f"updateDownloadProgress({p})")
+                if window: window.evaluate_js(f"updateDownloadProgress({p})")
             except: pass
 
     def search_song(self, query):
-        """Searches YouTube for tracks."""
         ydl_opts = {'format': 'bestaudio', 'noplaylist': True, 'quiet': True}
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(f"ytsearch5:{query}", download=False)
-                return [{
-                    'title': e.get('title'),
-                    'url': e.get('webpage_url'),
-                    'duration': e.get('duration'),
-                    'thumbnail': e.get('thumbnail')
-                } for e in info['entries']]
-        except Exception as e:
-            return {"error": str(e)}
+                return [{'title': e.get('title'), 'url': e.get('webpage_url'), 'duration': e.get('duration'), 'thumbnail': e.get('thumbnail')} for e in info['entries']]
+        except Exception as e: return {"error": str(e)}
 
     def download_track(self, yt_url, use_spotify=False):
-        """Downloads MP3 with automatic retry logic (3 attempts)."""
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                # 1. Fetch info
-                with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
-                    info = ydl.extract_info(yt_url, download=False)
-                    title = info.get('title', 'Unknown')
-
-                # 2. Prepare file path
-                clean_name = "".join([c for c in title if c.isalnum() or c in (' ', '.', '_')]).strip()
-                temp_path = os.path.join(self.current_path, clean_name)
-                final_path = temp_path + ".mp3"
-
-                # 3. Download options
-                ydl_opts = {
-                    'format': 'bestaudio/best',
-                    'outtmpl': temp_path,
-                    'progress_hooks': [self._progress_hook],
-                    'postprocessors': [{
-                        'key': 'FFmpegExtractAudio',
-                        'preferredcodec': 'mp3',
-                        'preferredquality': '192',
-                    }],
-                    'quiet': True
-                }
-                
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([yt_url])
-
-                # 4. Metadata tagging
-                self._apply_tags(final_path, title, use_spotify)
-                return {"status": "success", "filename": clean_filename} if 'clean_filename' in locals() else {"status": "success", "filename": clean_name}
-
-            except Exception as e:
-                print(f"Download attempt {attempt+1} failed: {e}")
-                if attempt == max_retries - 1:
-                    return {"status": "error", "message": "Failed after 3 retries."}
-                time.sleep(1)
-
-    def get_spotify_data(self, query):
-        """Fetches metadata from Spotify for a given YouTube title."""
-        if not self._sp: return None
         try:
-            # Clean string for better search
-            q = query.split('(')[0].split('[')[0].replace("official video", "").strip()
-            res = self._sp.search(q=q, limit=1, type='track')
-            items = res['tracks']['items']
-            if items:
-                t = items[0]
-                return {
-                    "title": t['name'],
-                    "artist": t['artists'][0]['name'],
-                    "album": t['album']['name'],
-                    "cover_url": t['album']['images'][0]['url'] if t['album']['images'] else None
-                }
-        except: pass
-        return None
+            with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+                info = ydl.extract_info(yt_url, download=False)
+                title = info.get('title', 'Unknown')
+            clean_name = "".join([c for c in title if c.isalnum() or c in (' ', '.', '_')]).strip()
+            temp_path = os.path.join(self.current_path, clean_name)
+            final_path = temp_path + ".mp3"
+            ydl_opts = {
+                'format': 'bestaudio/best',
+                'outtmpl': temp_path,
+                'progress_hooks': [self._progress_hook],
+                'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3','preferredquality': '192'}],
+                'quiet': True
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([yt_url])
+            self._apply_tags(final_path, title, use_spotify)
+            return {"status": "success", "filename": clean_name}
+        except Exception as e: return {"status": "error", "message": str(e)}
 
     def _apply_tags(self, file_path, yt_title, use_spotify):
-        """Applies ID3 tags and cover art to the file."""
         title, artist, album, cover_data = yt_title, "Unknown Artist", "Inferno Downloads", None
-
-        if use_spotify:
-            meta = self.get_spotify_data(yt_title)
-            if meta:
-                title, artist, album = meta['title'], meta['artist'], meta['album']
-                if meta['cover_url']:
-                    try: cover_data = requests.get(meta['cover_url']).content
-                    except: pass
-
+        if use_spotify and self._sp:
+            try:
+                q = yt_title.split('(')[0].split('[')[0].strip()
+                res = self._sp.search(q=q, limit=1, type='track')
+                if res['tracks']['items']:
+                    t = res['tracks']['items'][0]
+                    title, artist, album = t['name'], t['artists'][0]['name'], t['album']['name']
+                    if t['album']['images']: cover_data = requests.get(t['album']['images'][0]['url']).content
+            except: pass
         try:
-            if not os.path.exists(file_path): return
             audio = MP3(file_path, ID3=ID3)
-            audio.tags.add(TIT2(encoding=3, text=title))
-            audio.tags.add(TPE1(encoding=3, text=artist))
-            audio.tags.add(TALB(encoding=3, text=album))
-            if cover_data:
-                audio.tags.add(APIC(encoding=3, mime='image/jpeg', type=3, desc=u'Cover', data=cover_data))
+            audio.tags.add(TIT2(encoding=3, text=title)); audio.tags.add(TPE1(encoding=3, text=artist)); audio.tags.add(TALB(encoding=3, text=album))
+            if cover_data: audio.tags.add(APIC(encoding=3, mime='image/jpeg', type=3, desc=u'Cover', data=cover_data))
             audio.save()
-        except Exception as e:
-            print(f"Tagging Error: {e}")
-
-    # --- FOLDER / FILE SCANNING ---
+        except: pass
 
     def get_local_url(self, file_path):
         return f"http://127.0.0.1:{self.port}/media?path={urllib.parse.quote(str(file_path))}"
@@ -250,7 +233,7 @@ class Api:
             if not search_path.exists(): return []
             for file in search_path.rglob('*'):
                 if file.suffix.lower() in exts:
-                    meta = self.get_metadata(str(file.absolute()))
+                    meta = self.get_metadata(str(file.absolute()), update_discord=False)
                     files_list.append({
                         "name": meta["title"],
                         "artist": meta["artist"],
@@ -262,16 +245,15 @@ class Api:
         except: pass
         return sorted(files_list, key=lambda x: x['name'])
 
-    def get_metadata(self, file_path):
+    def get_metadata(self, file_path, update_discord=True):
         path_str = file_path
         metadata = {"path": self.get_local_url(path_str), "title": os.path.basename(path_str), "artist": "Unknown Artist", "album": "Unknown Album", "cover": "", "duration": 0, "type": "audio"}
-        ext = path_str.lower()
         try:
-            if ext.endswith(('.mp4', '.webm')):
+            if path_str.lower().endswith(('.mp4', '.webm')):
                 metadata["type"] = "video"
                 m = MutagenFile(path_str)
                 if m: metadata["duration"] = m.info.length
-            elif ext.endswith('.mp3'):
+            elif path_str.lower().endswith('.mp3'):
                 audio = MP3(path_str, ID3=ID3)
                 metadata["duration"] = audio.info.length
                 if audio.tags:
@@ -282,20 +264,19 @@ class Api:
                             b64 = base64.b64encode(tag.data).decode('utf-8')
                             metadata["cover"] = f"data:{tag.mime};base64,{b64}"
                             break
-            else:
-                m = MutagenFile(path_str)
-                if m: metadata["duration"] = m.info.length
+            
+            if update_discord:
+                # Get the cover URL from Spotify for Discord display
+                sp_cover = self.get_spotify_cover_url(metadata["title"], metadata["artist"])
+                self._discord.update(metadata["title"], metadata["artist"], sp_cover)
+
         except: pass
         return metadata
-    # --- OPEN IN FOLDER ---
+
     def show_in_folder(self, path):
-        if platform.system() == "Windows":
-            # Opens the folder and selects the file
-            subprocess.run(['explorer', '/select,', os.path.normpath(path)])
-        elif platform.system() == "Darwin": # macOS
-            subprocess.run(['open', '-R', path])
-        else: # Linux
-            subprocess.run(['xdg-open', os.path.dirname(path)])
+        if platform.system() == "Windows": subprocess.run(['explorer', '/select,', os.path.normpath(path)])
+        elif platform.system() == "Darwin": subprocess.run(['open', '-R', path])
+        else: subprocess.run(['xdg-open', os.path.dirname(path)])
 
 def run():
     global window
