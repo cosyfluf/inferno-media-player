@@ -13,8 +13,10 @@ The player features a real-time audio visualizer, seamless video support, and an
 
 | Main Player Interface | Song Downloader (Detailed Mode) |
 | :---: | :---: |
-| ![Main UI](screenshots/demo.png) | ![Downloader](screenshots/downloader.png) |
-| *Visualizer and Playlist* | *Search and Spotify metadata enrichment* |
+| ![Main UI](screenshots/demo.png) | ![Downloader](screenshots/downloader.png) | ![Presence](screenshots/discord.png)|
+| *Visualizer and Playlist* | *Search and Spotify metadata enrichment* |*Discord rich presence* |
+
+
 
 ---
 
