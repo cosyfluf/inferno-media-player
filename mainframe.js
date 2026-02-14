@@ -50,6 +50,27 @@ window.addEventListener('pywebviewready', async () => {
         });
     }
 });
+//--- PLAYLIST LOADER LOGIC ---
+function setPlaylistLoading(isLoading) {
+    const loader = document.getElementById('playlist-loader');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (isLoading) {
+        loader.style.display = 'block';
+        sidebar.classList.add('loading-active');
+    } else {
+        loader.style.display = 'none';
+        sidebar.classList.remove('loading-active');
+    }
+}
+window.addEventListener('pywebviewready', async () => {
+    setPlaylistLoading(true); 
+    
+    const files = await callApi('scan_folder');
+    if(files) renderPlaylist(files);
+    
+    setPlaylistLoading(false); 
+});
 
 /*-- PROGRESS BAR LOGIC --*/
 if (progressBar) {
@@ -584,7 +605,17 @@ async function startDownload() {
     const status = document.getElementById('dl-status');
     
     status.innerText = "Downloading and converting... please wait (Retry enabled automatically)";
-    document.getElementById('dl-step-2').style.display = 'none';
+    document.getElementById('dl-step-2').style.display = 'none';async function startDownload() {
+    
+    if(response && response.status === "success") {
+        status.innerText = "🔥 Download finished!";
+        
+        setPlaylistLoading(true);
+        const newFiles = await callApi('scan_folder');
+        if(newFiles) renderPlaylist(newFiles);
+        setPlaylistLoading(false);
+    }
+}
 
     // Automatic silent retry happens inside callApi
     const response = await callApi('download_track', selectedYTItem.url, useSpotify);
