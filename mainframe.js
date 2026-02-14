@@ -19,6 +19,10 @@ let isVisualizerEnabled = true; // on by default
 let isDynamicColorEnabled = true; // Global state for dynamic colors
 let currentThemeColor = { r: 255, g: 0, b: 0 }; // Default Inferno Red
 
+let favourites = [];
+let currentFavImage = null;
+let isViewingFavourite = false; // To track if we are looking at local files or a playlist
+
 // --- INIT PLAYLIST ON LOAD ---
 
 window.addEventListener('pywebviewready', async () => {
@@ -161,7 +165,6 @@ function renderPlaylist(files) {
     
     container.innerHTML = playlist.map((f, i) => {
         const coverSrc = f.cover && f.cover !== "" ? f.cover : 'alt.png';
-        // Escape backslashes for the string path to prevent JS errors
         const escapedPath = f.path.replace(/\\/g, '\\\\');
         
         return `
@@ -171,6 +174,10 @@ function renderPlaylist(files) {
                 <div class="pl-title">${f.name || f.filename}</div>
                 <div class="pl-artist">${f.artist || 'Unknown Artist'}</div>
             </div>
+            <!-- Add to Favourite Button -->
+            <svg class="add-to-fav-btn" viewBox="0 0 24 24" onclick="showFavSelector(event, '${escapedPath}')">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
             <svg class="show-folder-btn" viewBox="0 0 24 24" title="Show in folder" 
                 onclick="showInFolder('${escapedPath}'); event.stopPropagation();">
                 <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
@@ -178,6 +185,129 @@ function renderPlaylist(files) {
         </div>
         `;
     }).join('');
+}
+
+// --- FAVOURITES LOGIC ---
+
+// Load favourites when app starts
+window.addEventListener('pywebviewready', async () => {
+    favourites = await window.pywebview.api.load_favourites();
+    renderFavouritesSidebar();
+});
+
+function openFavModal() { document.getElementById('fav-modal').style.display = 'block'; }
+function closeFavModal() { document.getElementById('fav-modal').style.display = 'none'; }
+
+async function selectFavImage() {
+    const b64 = await window.pywebview.api.select_fav_image();
+    if(b64) {
+        currentFavImage = b64;
+        document.getElementById('fav-image-preview').style.backgroundImage = `url(${b64})`;
+        document.getElementById('fav-image-preview').innerText = "";
+    }
+}
+
+async function createNewFavourite() {
+    const name = document.getElementById('fav-name-input').value;
+    if(!name) return alert("Please enter a name");
+
+    const newFav = {
+        id: Date.now(),
+        name: name,
+        image: currentFavImage || 'alt.png',
+        tracks: [] // Paths stored here
+    };
+
+    favourites.push(newFav);
+    await window.pywebview.api.save_favourites_list(favourites);
+    
+    renderFavouritesSidebar();
+    closeFavModal();
+    // Reset inputs
+    document.getElementById('fav-name-input').value = "";
+    currentFavImage = null;
+    document.getElementById('fav-image-preview').style.backgroundImage = "none";
+    document.getElementById('fav-image-preview').innerText = "Click to add Cover";
+}
+
+function renderFavouritesSidebar() {
+    const container = document.getElementById('favourites-list');
+    container.innerHTML = favourites.map(fav => `
+        <div class="fav-item" onclick="viewFavourite(${fav.id})">
+            <img src="${fav.image}">
+            <span>${fav.name}</span>
+        </div>
+    `).join('');
+}
+
+// Shows a small menu to pick which playlist to add a song to
+function showFavSelector(event, trackPath) {
+    event.stopPropagation();
+    
+    // Remove old selector if exists
+    const old = document.querySelector('.fav-selector');
+    if(old) old.remove();
+
+    const selector = document.createElement('div');
+    selector.className = 'fav-selector';
+    selector.style.left = event.clientX + "px";
+    selector.style.top = event.clientY + "px";
+
+    if(favourites.length === 0) {
+        selector.innerHTML = `<div class="menu-item">No Playlists</div>`;
+    }
+
+    favourites.forEach(fav => {
+        const item = document.createElement('div');
+        item.className = 'menu-item';
+        item.style.fontSize = "12px";
+        item.innerText = "Add to: " + fav.name;
+        item.onclick = async () => {
+            if(!fav.tracks.includes(trackPath)) {
+                fav.tracks.push(trackPath);
+                await window.pywebview.api.save_favourites_list(favourites);
+            }
+            selector.remove();
+        };
+        selector.appendChild(item);
+    });
+
+    document.body.appendChild(selector);
+    
+    // Close when clicking elsewhere
+    setTimeout(() => {
+        window.onclick = () => { selector.remove(); window.onclick = null; };
+    }, 100);
+}
+
+async function viewFavourite(id) {
+    const fav = favourites.find(f => f.id === id);
+    if(!fav) return;
+
+    isViewingFavourite = true;
+    
+    // Convert paths back to full metadata objects for the list
+    const tracks = [];
+    for(let path of fav.tracks) {
+        const meta = await window.pywebview.api.get_metadata(path, false);
+        tracks.push({
+            name: meta.title,
+            artist: meta.artist,
+            path: path,
+            cover: meta.cover,
+            duration: meta.duration
+        });
+    }
+
+    // Update UI Header
+    document.getElementById('title').innerText = fav.name;
+    document.getElementById('details').innerText = "Favourite Playlist";
+    if(fav.image) {
+        cover.src = fav.image;
+        cover.style.display = "block";
+    }
+
+    renderPlaylist(tracks);
 }
 
 // New function to call the Python API

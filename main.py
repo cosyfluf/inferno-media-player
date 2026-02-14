@@ -27,6 +27,9 @@ from spotipy.oauth2 import SpotifyClientCredentials
 CONFIG_FILE = Path(__file__).parent / "config.json"
 window = None 
 
+#---FAVOURITES STORAGE---
+FAV_FILE = Path(__file__).parent / "favourites.json"
+
 # --- DISCORD MANAGER ---
 class DiscordManager:
     """Manages Discord Rich Presence communication in a non-blocking way."""
@@ -278,6 +281,35 @@ class Api:
         elif platform.system() == "Darwin": subprocess.run(['open', '-R', path])
         else: subprocess.run(['xdg-open', os.path.dirname(path)])
 
+# --- FAVOURITES API ---
+
+    def load_favourites(self):
+        """Loads all custom playlists from the JSON file."""
+        if not FAV_FILE.exists():
+            return []
+        try:
+            with open(FAV_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            return []
+
+    def save_favourites_list(self, fav_list):
+        """Saves the entire list of favourites to the JSON file."""
+        with open(FAV_FILE, 'w', encoding='utf-8') as f:
+            json.dump(fav_list, f, indent=4)
+        return True
+
+    def select_fav_image(self):
+        """Opens a file dialog to pick a cover image for a playlist."""
+        root = tk.Tk(); root.withdraw()
+        path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.jpeg *.png *.webp")])
+        root.destroy()
+        if path:
+            with open(path, "rb") as img_file:
+                return f"data:image/png;base64,{base64.b64encode(img_file.read()).decode('utf-8')}"
+        return None
+    
+    
 def run():
     global window
     threading.Thread(target=start_server, daemon=True).start()

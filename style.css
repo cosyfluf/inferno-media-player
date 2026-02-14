@@ -718,3 +718,57 @@
             background: rgba(255, 0, 0, 0.1);
             transform: scale(1.1);
         }
+        /* --- FAVOURITES UI --- */
+        #favourites-list {
+            padding: 0 10px;
+            margin-bottom: 10px;
+        }
+
+        .fav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        .fav-item:hover {
+            background: rgba(255, 0, 0, 0.1);
+            color: white;
+        }
+
+        .fav-item img {
+            width: 35px;
+            height: 35px;
+            border-radius: 3px;
+            object-fit: cover;
+            background: #222;
+        }
+
+        .add-to-fav-btn {
+            width: 18px;
+            height: 18px;
+            fill: #666;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-left: 5px;
+        }
+
+        .add-to-fav-btn:hover {
+            fill: #0f0; /* Green highlight for adding */
+            transform: scale(1.2);
+        }
+
+        /* Playlist Context Menu (simple) */
+        .fav-selector {
+            position: absolute;
+            background: #111;
+            border: 1px solid var(--red);
+            z-index: 1000;
+            border-radius: 5px;
+            box-shadow: 0 0 15px black;
+        }

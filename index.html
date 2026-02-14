@@ -32,7 +32,12 @@
             <div class="loader"></div>
             <p style="color: #666; font-size: 0.8em; margin-top: 10px;">Scanning Media...</p>
         </div>
-
+        <div class="sidebar-header" style="padding-top: 20px; font-size: 18px;">LIBRARY</div>
+        <div class="menu-item" onclick="openFavModal()">➕ Create Favourite</div>
+        <div id="favourites-list">
+            <!-- Favourite playlists will appear here -->
+        </div>
+        <div class="sidebar-header" style="padding-top: 20px; font-size: 18px;">LOCAL FILES</div>
         <div id="playlist"></div>
     </div>
 
@@ -141,8 +146,19 @@
             </div>
         </div>
     </div>
-
+<!-- Modal for creating Favourites -->
+    <div id="fav-modal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close" onclick="closeFavModal()">&times;</span>
+            <h2 style="color: var(--red);">NEW FAVOURITE</h2>
+            <input type="text" id="fav-name-input" placeholder="Playlist Name..." style="width: 100%; padding: 10px; margin-bottom: 15px; background: #111; border: 1px solid #444; color: white;">
+            <div id="fav-image-preview" onclick="selectFavImage()" style="width: 100%; height: 150px; border: 2px dashed #444; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 15px; background-size: cover; background-position: center;">
+                Click to add Cover
+            </div>
+            <button class="dl-confirm-btn" style="width: 100%;" onclick="createNewFavourite()">CREATE</button>
+        </div>
     </div>
+</div>
 
 
     <audio id="audio" crossorigin="auto"></audio>
