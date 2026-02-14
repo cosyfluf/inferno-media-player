@@ -1,39 +1,41 @@
+
 # 🔥 Inferno Media Player
 
 ![Python](https://img.shields.io/badge/Made%20with-Python-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-**Inferno Media Player** is a lightweight, modern, and high-performance desktop media player built with **Python** and **Web Technologies**. It combines a sleek "Inferno" dark aesthetic with powerful playback and downloading capabilities.
+**Inferno Media Player** is a lightweight, modern, and high-performance desktop media player built with **Python** and **Web Technologies**. It combines a sleek "Inferno" dark aesthetic with powerful playback, library management, and downloading capabilities.
 
-The player features a real-time audio visualizer, seamless video support, and an integrated YouTube-to-MP3 downloader that uses Spotify metadata to provide high-quality album art and track information.
+The player features a real-time audio visualizer, seamless video support, and an integrated YouTube-to-MP3 downloader enriched with Spotify metadata.
 
 ---
 
 ## 📸 Screenshots
 
-| Main Player Interface | Song Downloader (Detailed Mode) | Discord Presence | 
+| Main Player Interface | Custom Library (Favourites) | Song Downloader | 
 | :---: | :---: | :---: |
-| ![Main UI](screenshots/demo.png) | ![Downloader](screenshots/downloader.png) | ![Presence](screenshots/discord.png)|
-| *Visualizer and Playlist* | *Search and Spotify metadata enrichment* |*Discord rich presence* |
-
-
+| ![Main UI](screenshots/demo.png) | ![Library UI](screenshots/library.png) | ![Downloader](screenshots/downloader.png) |
+| *Visualizer and Playlist* | *Custom Playlists with Artwork* | *Spotify metadata enrichment* |
 
 ---
 
 ## 🚀 Key Features
 
 *   **Hybrid Architecture:** Powered by `pywebview`, bridging an HTML5/CSS3/JS frontend with a Python backend.
-*   **Discord Rich Presence:** Show your friends what you're listening to! Integrates with Discord to display track titles, artists, and even album covers in real-time.
-*   **Multi-Format Support:** Plays **Audio** (MP3, WAV, OGG) and **Video** (MP4, WEBM) files.
-*   **Real-time Visualizer:** Integrated HTML5 Canvas spectrum visualizer reacting to audio frequency data.
+*   **Custom Library System (Favourites):** 
+    *   **Create Playlists:** Create and name your own playlists.
+    *   **Custom Artwork:** Upload your own cover images for every playlist.
+    *   **Easy Management:** Add any local song to your favourites with a single click.
+*   **Discord Rich Presence:** Automatically shows track titles, artists, and album covers on your Discord profile.
+*   **Multi-Format Support:** Plays **Audio** (MP3, WAV, OGG) and **Video** (MP4, WEBM).
+*   **Real-time Visualizer:** Integrated HTML5 Canvas spectrum visualizer reacting to live audio data.
 *   **Smart Library Management:**
-    *   **Folder Scanning:** Automatically scans directories and extracts metadata.
-    *   **Instant Search:** Filter your playlist by title or artist in real-time.
+    *   **Folder Scanning:** Automatically extracts metadata and ID3 tags.
+    *   **Instant Search:** Filter local files or playlists by title or artist.
 *   **Integrated YouTube Downloader:**
     *   **Normal Mode:** Fast YouTube-to-MP3 conversion.
-    *   **Detailed Mode:** Uses the **Spotify API** to fetch official album covers, artist names, and album titles to tag your files perfectly.
-*   **Advanced Playback Controls:** Draggable progress bar for precise scrubbing, shuffle, loop, and volume controls.
-*   **Persistent Settings:** Saves your music folder, API credentials, and Discord settings in a `config.json` file.
+    *   **Detailed Mode:** Uses the **Spotify API** to fetch official album covers and tags.
+*   **Persistent Storage:** Saves your music folder, API credentials, and custom playlists in `config.json` and `favourites.json`.
 
 ---
 
@@ -42,18 +44,19 @@ The player features a real-time audio visualizer, seamless video support, and an
 *   **Backend:** Python 3.10+
 *   **Downloader Engine:** `yt-dlp` (YouTube) & `spotipy` (Spotify API).
 *   **Presence:** `pypresence` for Discord Rich Presence integration.
-*   **Metadata:** `mutagen` for ID3 tagging and cover embedding.
+*   **Metadata:** `mutagen` for ID3 tagging.
 *   **Frontend:** HTML5, CSS3, Vanilla JavaScript.
-*   **Server:** Internal Python range-request server for media streaming/scrubbing.
+*   **Database:** JSON-based persistent storage (`config.json`, `favourites.json`).
+*   **Server:** Internal Python range-request server for high-performance media streaming.
 
 ---
 
 ## ⚙️ Configuration (Spotify & Discord)
 
-To use the **"Detailed Version"** in the downloader and enable Discord Rich Presence with covers, you should provide your credentials in the `config.json`.
+To use the **"Detailed Version"** in the downloader and enable Discord Rich Presence with covers, provide your credentials in the `config.json`.
 
 1.  **Spotify:** Visit the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) to get a **Client ID** and **Client Secret**.
-2.  **Discord:** The application uses a default Client ID (`1471223610315247616`) for the Inferno Media Player presence.
+2.  **Discord:** The application uses a default Client ID (`1471223610315247616`) for the Inferno presence.
 3.  Create/Edit `config.json` in the root folder:
 
 ### `config.json` Example:
@@ -65,7 +68,6 @@ To use the **"Detailed Version"** in the downloader and enable Discord Rich Pres
     "discord_client_id": "1471223610315247616"
 }
 ```
-> **Note:** On Windows, ensure you use double backslashes (`\\`) for the folder path.
 
 ---
 
