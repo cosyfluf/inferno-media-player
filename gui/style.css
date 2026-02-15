@@ -428,6 +428,7 @@
         /* Media Display Styling */
         #media-display {
             margin-top: 50px;
+            aspect-ratio: 1/1   ;
             width: auto;
             max-width: 90%;
             max-height: 45vh;
@@ -445,7 +446,7 @@
         #cover {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
             transition: 0.5s ease-in-out;
         }
 
