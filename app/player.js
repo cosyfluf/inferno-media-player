@@ -257,3 +257,25 @@ function randomSong() {
         console.log("Playlist is empty, cannot play random song.");
     }
 }
+// --- FAVOURITES / PLAYLISTS autoscroll ---
+async function selectTrack(i) {
+    index = i;
+    
+    // UI: Update active state classes
+    document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
+    const activeEl = document.getElementById(`item-${i}`);
+    
+    if (activeEl) {
+        activeEl.classList.add('active');
+        
+        // AUTO-SCROLL: Scroll the active item to the center of the playlist container
+        activeEl.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+    
+    // Metadata and playback logic
+    const meta = await window.pywebview.api.get_metadata(playlist[index].path);
+    playMedia(meta);
+}
