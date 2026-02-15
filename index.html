@@ -42,6 +42,8 @@
             LOCAL FILES
             <span id="back-to-local" style="display: none; cursor: pointer; font-size: 12px; color: #ff4444;" onclick="backToLocalFiles()">⬅ Back</span>
         </div>
+        
+        <div class="menu-item" onclick="openDownloader()">➕ Add Song</div>
 
         <div id="playlist-loader" class="loader-container" style="display: none;">
             <div class="loader"></div>
@@ -106,7 +108,7 @@
 
     <!----menu---->
     <svg class="burger" viewBox="0 0 24 24" width="35"
-        onclick="document.getElementById('menu').classList.toggle('menu-open')">
+        onclick="window.location.href='menu.html'">
         <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
     </svg>
     <div id="menu">

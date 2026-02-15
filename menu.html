@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inferno - Settings</title>
+    <link rel="stylesheet" href="gui/style.css">
+    <link rel="stylesheet" href="gui/menu.css">
+</head>
+<body class="discord-layout">
+
+    <!-- TAB NAVIGATION -->
+    <nav class="settings-sidebar">
+        <div class="sidebar-scroller">
+            <div class="sidebar-header-small">APP SETTINGS</div>
+            <div class="sidebar-item active" onclick="switchTab(event, 'tab-audio')">Audio & Video</div>
+            <div class="sidebar-item" onclick="switchTab(event, 'tab-appearance')">Appearance</div>
+            <div class="sidebar-item" onclick="switchTab(event, 'tab-library')">Library & Files</div>
+            
+            <div class="separator"></div>
+            
+            <div class="sidebar-header-small">SYSTEM</div>
+            <div class="sidebar-item" onclick="window.location.href='index.html'">Back to Player</div>
+        </div>
+    </nav>
+
+    <!-- CONTENT AREA -->
+    <main class="settings-content">
+        <div class="content-column">
+            
+            <!-- TAB: AUDIO & VIDEO -->
+            <section id="tab-audio" class="tab-pane active">
+                <h2 class="section-title-large">Audio & Video</h2>
+                <div class="setting-block">
+                    <div class="setting-info">
+                        <label class="label-main">VISUALIZER ENGINE</label>
+                        <p class="desc-main">Enables real-time frequency analysis.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="visualizer-toggle" checked onchange="toggleVisualizer(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-block-vertical">
+                    <label class="label-main">DEFAULT VOLUME</label>
+                    <input type="range" class="discord-range" min="0" max="1" step="0.01" value="0.8">
+                </div>
+            </section>
+
+            <!-- TAB: APPEARANCE -->
+            <section id="tab-appearance" class="tab-pane">
+                <h2 class="section-title-large">Appearance</h2>
+                <div class="setting-block">
+                    <div class="setting-info">
+                        <label class="label-main">DYNAMIC THEME</label>
+                        <p class="desc-main">Sync UI colors with album art.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="dynamic-color-toggle" checked onchange="toggleDynamicColor(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- TAB: LIBRARY -->
+            <section id="tab-library" class="tab-pane">
+                <h2 class="section-title-large">Library & Files</h2>
+                <div class="setting-block-vertical">
+                    <label class="label-main">ROOT FOLDER</label>
+                    <div class="button-row">
+                        <button class="discord-btn" onclick="changeFolder()">Change Folder</button>
+                        <button class="discord-btn-outline" onclick="manualFile()">Open File</button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ESC BUTTON -->
+        <div class="close-wrapper" onclick="window.location.href='index.html'">
+            <div class="close-button">✕</div>
+            <div class="close-text">ESC</div>
+        </div>
+    </main>
+
+    <script>
+        function switchTab(event, tabId) {
+            // Hide all tab panes
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+            
+            // Deactivate all sidebar items
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            
+            // Show selected tab and activate sidebar item
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        function switchTab(event, tabId) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Handle ESC key for navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

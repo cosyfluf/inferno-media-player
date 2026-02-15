@@ -1,0 +1,114 @@
+/* --- LAYOUT --- */
+body.discord-layout {
+    display: flex;
+    height: 100vh;
+    margin: 0;
+    background: #050000;
+    color: #eee;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+}
+
+/* --- SIDEBAR --- */
+.settings-sidebar {
+    width: 260px;
+    background: #0a0000;
+    border-right: 1px solid #200;
+    flex-shrink: 0;
+    padding: 60px 10px;
+}
+
+.sidebar-item {
+    padding: 10px 15px;
+    margin-bottom: 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #888;
+    font-weight: 600;
+}
+
+.sidebar-item:hover { background: #150000; color: #fff; }
+.sidebar-item.active { background: #250000; color: var(--red); }
+
+.sidebar-header-small {
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 10px;
+    text-transform: uppercase;
+}
+
+/* --- TAB LOGIC --- */
+.tab-pane {
+    display: none; /* Hidden by default */
+}
+
+.tab-pane.active {
+    display: block; /* Visible when active */
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- CONTENT --- */
+.settings-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 60px 40px;
+}
+
+.content-column { max-width: 700px; margin: 0 auto; }
+
+.section-title-large {
+    color: var(--red);
+    font-size: 24px;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+}
+
+.setting-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #111;
+}
+
+.setting-block-vertical { padding: 20px 0; }
+
+.label-main { font-weight: bold; font-size: 14px; color: #ccc; }
+.desc-main { color: #666; font-size: 13px; margin: 5px 0 0; }
+
+/* --- UI COMPONENTS --- */
+.discord-range { width: 100%; accent-color: var(--red); cursor: pointer; }
+.button-row { display: flex; gap: 10px; margin-top: 15px; }
+.discord-btn { background: var(--red); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.discord-btn-outline { background: transparent; border: 1px solid #444; color: #ccc; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+
+/* --- ESC BUTTON --- */
+.close-wrapper {
+    position: fixed;
+    top: 40px;
+    right: 40px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.close-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #666;
+    transition: 0.3s;
+}
+
+.close-wrapper:hover .close-button { border-color: var(--red); color: var(--red); transform: rotate(90deg); }
+.close-text { font-size: 12px; color: #666; margin-top: 5px; font-weight: bold; }
