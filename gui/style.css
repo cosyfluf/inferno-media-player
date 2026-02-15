@@ -772,3 +772,16 @@
             border-radius: 5px;
             box-shadow: 0 0 15px black;
         }
+
+        /* Styling for the library back button */
+        #back-to-local {
+            background: rgba(255, 68, 68, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: 0.3s ease;
+        }
+
+        #back-to-local:hover {
+            background: #ff4444;
+            color: white !important;
+        }

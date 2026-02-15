@@ -37,7 +37,10 @@
         <div id="favourites-list">
             <!-- Favourite playlists will appear here -->
         </div>
-        <div class="sidebar-header" style="padding-top: 20px; font-size: 18px;">LOCAL FILES</div>
+        <div class="sidebar-header" style="padding-top: 20px; font-size: 18px; display: flex; justify-content: space-between; align-items: center;">
+            LOCAL FILES
+            <span id="back-to-local" style="display: none; cursor: pointer; font-size: 12px; color: #ff4444;" onclick="backToLocalFiles()">⬅ Back</span>
+        </div>
         <div id="playlist"></div>
     </div>
 

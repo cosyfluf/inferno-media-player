@@ -102,7 +102,10 @@ async function viewFavourite(id) {
 
     isViewingFavourite = true;
     
-    // Convert paths back to full metadata objects for the list
+    // Show the back button in the sidebar
+    document.getElementById('back-to-local').style.display = 'inline';
+    
+    // Convert stored paths back to full metadata objects
     const tracks = [];
     for(let path of fav.tracks) {
         const meta = await window.pywebview.api.get_metadata(path, false);
@@ -115,13 +118,35 @@ async function viewFavourite(id) {
         });
     }
 
-    // Update UI Header
+    // Update main UI Header
     document.getElementById('title').innerText = fav.name;
     document.getElementById('details').innerText = "Favourite Playlist";
+    
+    // Update cover image if available
     if(fav.image) {
-        cover.src = fav.image;
-        cover.style.display = "block";
+        const coverImg = document.getElementById('cover');
+        coverImg.src = fav.image;
+        coverImg.style.display = "block";
     }
 
     renderPlaylist(tracks);
+}
+
+// Function to return to the main local library
+async function backToLocalFiles() {
+    isViewingFavourite = false;
+    
+    // Hide back button and reset info text
+    document.getElementById('back-to-local').style.display = 'none';
+    document.getElementById('title').innerText = "Ready for INFERNO?";
+    document.getElementById('details').innerText = "Select a track from your playlist";
+    
+    // Trigger loader
+    setPlaylistLoading(true);
+    
+    // Rescan the local folder and re-render the playlist
+    const files = await window.pywebview.api.scan_folder();
+    if(files) renderPlaylist(files);
+    
+    setPlaylistLoading(false);
 }
