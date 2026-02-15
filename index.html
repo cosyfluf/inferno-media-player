@@ -10,34 +10,42 @@
 
 <body>
 
-    <!----Playlist---->
+    <!----Sidebar Toggle Arrow ---->
     <svg id="sidebar-toggle" class="toggle-arrow" viewBox="0 0 24 24" width="35"
         onclick="document.getElementById('sidebar').classList.toggle('hidden'), this.classList.toggle('collapsed');">
         <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" />
     </svg>
 
     <div id="sidebar">
+        <!-- 1. Search Box  -->
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search tracks..." autocomplete="off">
+        </div>
+
+        <!-- 2. Header -->
         <div class="sidebar-header">INFERNO</div>
+
+        <!-- 3. Controls -->
         <div class="menu-controls">
             <div class="volume-box">
                 <span>🔊</span>
                 <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
             </div>
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="🔍 Search song..." autocomplete="off">
-            </div>
         </div>
-		
+    
+        <!-- 4. Library Section -->
         <div class="sidebar-header" style="padding-top: 20px; font-size: 18px;">LIBRARY</div>
         <div id="favourites-list">
             <!-- Favourite playlists will appear here -->
         </div>
         <div class="menu-item" onclick="openFavModal()">➕ Create Favourite</div>
 
+        <!-- 5. Local Files Section -->
         <div class="sidebar-header" style="padding-top: 20px; font-size: 18px; display: flex; justify-content: space-between; align-items: center;">
             LOCAL FILES
             <span id="back-to-local" style="display: none; cursor: pointer; font-size: 12px; color: #ff4444;" onclick="backToLocalFiles()">⬅ Back</span>
         </div>
+
         <div id="playlist-loader" class="loader-container" style="display: none;">
             <div class="loader"></div>
             <p style="color: #666; font-size: 0.8em; margin-top: 10px;">Scanning Media...</p>
