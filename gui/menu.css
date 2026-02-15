@@ -1,12 +1,18 @@
-/* --- LAYOUT --- */
-body.discord-layout {
-    display: flex;
+/* --- OVERLAY CORE --- */
+#settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
     height: 100vh;
     margin: 0;
     background: #050000;
     color: #eee;
     font-family: 'Segoe UI', sans-serif;
     overflow: hidden;
+    display: none; /* Controlled by JavaScript */
+    z-index: 9999;
+    flex-direction: row;
 }
 
 /* --- SIDEBAR --- */
@@ -16,6 +22,8 @@ body.discord-layout {
     border-right: 1px solid #200;
     flex-shrink: 0;
     padding: 60px 10px;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-item {
@@ -40,11 +48,11 @@ body.discord-layout {
 
 /* --- TAB LOGIC --- */
 .tab-pane {
-    display: none; /* Hidden by default */
+    display: none; 
 }
 
 .tab-pane.active {
-    display: block; /* Visible when active */
+    display: block;
     animation: fadeIn 0.2s ease-out;
 }
 
@@ -95,6 +103,7 @@ body.discord-layout {
     right: 40px;
     cursor: pointer;
     text-align: center;
+    z-index: 10001;
 }
 
 .close-button {

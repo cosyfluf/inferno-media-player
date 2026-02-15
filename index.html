@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inferno Media Player</title>
     <link rel="stylesheet" href="gui/style.css">
+    <link rel="stylesheet" href="gui/menu.css">
 </head>
 
 <body>
@@ -42,7 +43,7 @@
             LOCAL FILES
             <span id="back-to-local" style="display: none; cursor: pointer; font-size: 12px; color: #ff4444;" onclick="backToLocalFiles()">⬅ Back</span>
         </div>
-        
+
         <div class="menu-item" onclick="openDownloader()">➕ Add Song</div>
 
         <div id="playlist-loader" class="loader-container" style="display: none;">
@@ -108,59 +109,9 @@
 
     <!----menu---->
     <svg class="burger" viewBox="0 0 24 24" width="35"
-        onclick="window.location.href='menu.html'">
+        onclick="toggleSettings(true)">
         <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
     </svg>
-    <div id="menu">
-        <div class="menu-header">MENU</div>
-
-        <div class="menu-item toggle-item align">
-            <!-- Visualizer Toggle -->
-            <span>Visualizer</span>
-            <label class="switch">
-                <input type="checkbox" id="visualizer-toggle" checked onchange="toggleVisualizer(this.checked)">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div class="menu-item toggle-item align">
-            <!-- Dynamic Color Toggle -->
-            <span>Dynamic color</span>
-            <label class="switch">
-                <input type="checkbox" id="dynamic-color-toggle" checked onchange="toggleDynamicColor(this.checked)">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div class="menu-controls">
-            <div class="menu-item" onclick="changeFolder()">📁 choose folder</div>
-            <div class="menu-item" onclick="manualFile()">📄 open file</div>
-        </div>
-        <div class="menu-item" onclick="openDownloader()">🔥 Song Downloader</div>
-        <div id="dl-modal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeDownloader()">&times;</span>
-                <h2>INFERNO DOWNLOADER</h2>
-                <div class="dl-search-group">
-                    <input type="text" id="dl-input" placeholder="Enter song name or YouTube link...">
-                    <button onclick="searchYT()">Search</button>
-                </div>
-
-                <div id="dl-results"></div>
-
-                <div id="dl-step-2" style="display:none;">
-                    <p id="selected-song-name"></p>
-                    <label class="container">Detailed Version (Spotify Metadata)
-                        <input type="checkbox" class="checkbox" id="dl-spotify">
-                        <span class="checkmark"></span>
-                    </label>
-                    <button class="dl-confirm-btn" id="start-dl-btn">DOWNLOAD NOW</button>
-                </div>
-
-                <div id="dl-status"></div>
-            </div>
-        </div>
-    </div>
 <!-- Modal for creating Favourites -->
     <div id="fav-modal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
@@ -175,6 +126,108 @@
     </div>
 </div>
 
+<!-- Settings Overlay -->
+<div id="settings-overlay" style="display: none;">
+    <nav class="settings-sidebar">
+        <div class="sidebar-scroller">
+            <div class="sidebar-header-small">APP SETTINGS</div>
+            <div class="sidebar-item active" onclick="switchSettingsTab(event, 'tab-audio')">Audio & Video</div>
+            <div class="sidebar-item" onclick="switchSettingsTab(event, 'tab-appearance')">Appearance</div>
+            <div class="sidebar-item" onclick="switchSettingsTab(event, 'tab-library')">Library & Files</div>
+            
+            <div class="separator"></div>
+            
+            <div class="sidebar-header-small">SYSTEM</div>
+            <div class="sidebar-item" onclick="toggleSettings(false)">Back to Player</div>
+        </div>
+    </nav>
+
+    <main class="settings-content">
+        <div class="content-column">
+            
+            <!-- TAB: AUDIO & VIDEO -->
+            <section id="tab-audio" class="settings-tab-pane active">
+                <h2 class="section-title-large">Audio & Video</h2>
+                <div class="setting-block">
+                    <div class="setting-info">
+                        <label class="label-main">VISUALIZER ENGINE</label>
+                        <p class="desc-main">Enables real-time frequency analysis.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="visualizer-toggle-settings" checked onchange="toggleVisualizer(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-block-vertical">
+                    <label class="label-main">DEFAULT VOLUME</label>
+                    <input type="range" class="discord-range" id="settings-volume" min="0" max="1" step="0.01" value="0.8" oninput="document.getElementById('volume-slider').value = this.value; setVolume(this.value)">
+                </div>
+            </section>
+
+            <!-- TAB: APPEARANCE -->
+            <section id="tab-appearance" class="settings-tab-pane">
+                <h2 class="section-title-large">Appearance</h2>
+                <div class="setting-block">
+                    <div class="setting-info">
+                        <label class="label-main">DYNAMIC THEME</label>
+                        <p class="desc-main">Sync UI colors with album art.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="dynamic-color-toggle-settings" checked onchange="toggleDynamicColor(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- TAB: LIBRARY -->
+            <section id="tab-library" class="settings-tab-pane">
+                <h2 class="section-title-large">Library & Files</h2>
+                <div class="setting-block-vertical">
+                    <label class="label-main">ROOT FOLDER</label>
+                    <div class="button-row" style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="discord-btn" onclick="changeFolder()" style="padding: 10px 20px; background: #5865F2; color: white; border: none; border-radius: 3px; cursor: pointer;">Change Folder</button>
+                        <button class="discord-btn-outline" onclick="manualFile()" style="padding: 10px 20px; background: transparent; color: white; border: 1px solid #4f545c; border-radius: 3px; cursor: pointer;">Open File</button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ESC BUTTON -->
+        <div class="close-wrapper" onclick="toggleSettings(false)">
+            <div class="close-button">✕</div>
+            <div class="close-text">ESC</div>
+        </div>
+    </main>
+</div>
+
+
+<!-- Downloader Modal -->
+    <div id="dl-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDownloader()">&times;</span>
+            <h2>INFERNO DOWNLOADER</h2>
+            <div class="dl-search-group">
+                <input type="text" id="dl-input" placeholder="Enter song name or YouTube link...">
+                <button onclick="searchYT()">Search</button>
+            </div>
+
+            <div id="dl-results"></div>
+
+            <div id="dl-step-2" style="display:none;">
+                <p id="selected-song-name"></p>
+                <label class="container">Detailed Version (Spotify Metadata)
+                    <input type="checkbox" class="checkbox" id="dl-spotify">
+                    <span class="checkmark"></span>
+                </label>
+                <button class="dl-confirm-btn" id="start-dl-btn">DOWNLOAD NOW</button>
+            </div>
+
+            <div id="dl-status"></div>
+        </div>
+    </div>
+
+
 
     <audio id="audio" crossorigin="auto"></audio>
 
@@ -183,6 +236,7 @@
     <script src="app/player.js"></script>
     <script src="app/favourites.js"></script>
     <script src="app/downloader.js"></script>
+    <script src="app/menu.js"></script>
 </body>
 
 </html>
