@@ -320,6 +320,7 @@ def run():
         js_api=api, 
         width=1200, 
         height=850, 
+        min_size=(1150, 687), # Set minimum window dimensions
         background_color='#050000'
     )
     webview.start()

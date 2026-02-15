@@ -15,7 +15,23 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            }
+
+        .main-title {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--red);
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+            z-index: 100;
+            white-space: nowrap;
+            user-select: none; 
         }
+
 
         /* --- CUSTOM SCROLLBAR CSS --- */
         #playlist::-webkit-scrollbar {
@@ -411,6 +427,7 @@
 
         /* Media Display Styling */
         #media-display {
+            margin-top: 50px;
             width: auto;
             max-width: 90%;
             max-height: 45vh;

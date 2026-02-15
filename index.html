@@ -10,20 +10,17 @@
 
 <body>
 
-    <!----Sidebar Toggle Arrow ---->
     <svg id="sidebar-toggle" class="toggle-arrow" viewBox="0 0 24 24" width="35"
         onclick="document.getElementById('sidebar').classList.toggle('hidden'), this.classList.toggle('collapsed');">
         <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" />
     </svg>
+
 
     <div id="sidebar">
         <!-- 1. Search Box  -->
         <div class="search-box">
             <input type="text" id="search-input" placeholder="Search tracks..." autocomplete="off">
         </div>
-
-        <!-- 2. Header -->
-        <div class="sidebar-header">INFERNO</div>
 
         <!-- 3. Controls -->
         <div class="menu-controls">
@@ -54,7 +51,11 @@
     </div>
 
     <!----media display---->
+
     <div id="main">
+
+        <div class="main-title">INFERNO</div>
+
         <div id="media-display">
             <img id="cover" src="alt.png" crossorigin="anonymous" style="display:none;" onerror="this.src='alt.png'; this.onerror=null;">
             <video id="video" style="display:none;" crossorigin="anonymous"></video>
