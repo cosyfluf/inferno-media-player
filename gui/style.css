@@ -826,3 +826,20 @@
             background: #ff4444;
             color: white !important;
         }
+
+#t-dur {
+    transition: color 0.5s;
+}
+
+/* Optional: Make the LIVE text pulse when in radio mode */
+.radio-live-pulse {
+    color: white !important;
+    text-shadow: 0 0 10px var(--red);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}

@@ -17,6 +17,7 @@ import requests
 import platform
 import subprocess
 from pypresence import Presence
+import re
 
 # --- DOWNLOADER LIBRARIES ---
 import yt_dlp
@@ -280,6 +281,38 @@ class Api:
         if platform.system() == "Windows": subprocess.run(['explorer', '/select,', os.path.normpath(path)])
         elif platform.system() == "Darwin": subprocess.run(['open', '-R', path])
         else: subprocess.run(['xdg-open', os.path.dirname(path)])
+        
+    def get_radio_metadata(self, url):
+        """Extracts ICY metadata from a live stream."""
+        import re
+        import requests
+        try:
+            headers = {'Icy-MetaData': '1'}
+            # We only read the first few KB to get the header
+            response = requests.get(url, headers=headers, stream=True, timeout=3)
+            metaint = int(response.headers.get('icy-metaint', 0))
+            station_name = response.headers.get('icy-name', 'Web Radio')
+            
+            if metaint > 0:
+                stream = response.raw
+                stream.read(metaint)
+                metadata_len = ord(stream.read(1)) * 16
+                if metadata_len > 0:
+                    raw_metadata = stream.read(metadata_len).decode('utf-8', errors='ignore')
+                    match = re.search(r"StreamTitle='([^']*)';", raw_metadata)
+                    if match:
+                        return {"title": match.group(1), "station": station_name}
+            return {"title": "Live Stream", "station": station_name}
+        except:
+            return {"title": "Live Radio", "station": "Inferno Stream"}
+
+    def get_default_radios(self):
+        """Returns a list of default radio stations."""
+        return [
+            {"name": "Lofi Girl", "url": "https://lofi.stream.laut.fm/lofi", "genre": "Lofi"},
+            {"name": "Nightride FM", "url": "https://stream.nightride.fm/nightride.mp3", "genre": "Synthwave"},
+            {"name": "BBC Radio 1", "url": "http://stream.live.vc.bbc.co.uk/bbc_radio_one", "genre": "Pop"}
+        ]    
 
 # --- FAVOURITES API ---
 

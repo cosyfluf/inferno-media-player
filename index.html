@@ -30,6 +30,17 @@
                 <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
             </div>
         </div>
+        <div class="sidebar-header" onclick="toggleRadioList()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding-top: 20px; font-size: 18px;">
+            WEB RADIO
+            <span id="radio-toggle-icon" style="transition: transform 0.3s; font-size: 12px;">▼</span>
+        </div>
+
+        <div id="radio-container" style="overflow: hidden; transition: max-height 0.3s ease-out;">
+            <div id="radio-list">
+                <!-- Radio stations will appear here -->
+            </div>
+            <div class="menu-item" onclick="addCustomRadio()" style="font-size: 13px; color: #888;">➕ Add Station</div>
+        </div>
     
         <!-- 4. Library Section -->
         <div class="sidebar-header" style="padding-top: 20px; font-size: 18px;">LIBRARY</div>
@@ -112,6 +123,7 @@
         onclick="toggleSettings(true)">
         <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
     </svg>
+    
 <!-- Modal for creating Favourites -->
     <div id="fav-modal" class="modal">
         <div class="modal-content" style="max-width: 400px;">
@@ -237,6 +249,7 @@
     <script src="app/favourites.js"></script>
     <script src="app/downloader.js"></script>
     <script src="app/menu.js"></script>
+    <script src="app/radio.js"></script>
 </body>
 
 </html>

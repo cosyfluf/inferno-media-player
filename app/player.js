@@ -210,11 +210,30 @@ function handleScrub(e) {
 
 
 // --- MEDIA EVENTS ---
+// --- MEDIA EVENTS ---
 [audio, video].forEach(m => {
-    m.onended = () => { if(!isLoop) playNext(); else m.play(); };
+    // Handle end of track
+    m.onended = () => { 
+        // If we are in radio mode, just try to resume the stream if it stops
+        if (typeof isRadioMode !== 'undefined' && isRadioMode) {
+            m.play();
+            return;
+        }
+        
+        // Normal playback logic
+        if(!isLoop) playNext(); else m.play(); 
+    };
     
     m.ontimeupdate = () => {
-        // Only update the progress bar automatically if the user is NOT dragging it
+        // 1. Check if Web Radio is active
+        if (typeof isRadioMode !== 'undefined' && isRadioMode) {
+            document.getElementById('t-cur').innerText = fmt(m.currentTime);
+            document.getElementById('t-dur').innerText = "LIVE";
+            progressFill.style.width = "100%";
+            return; // Skip normal file progress logic
+        }
+
+        // 2. Normal Local File logic (only if not dragging)
         if (!isDragging) {
             const dur = m.duration && isFinite(m.duration) && m.duration > 0 ? m.duration : 0;
             const cur = m.currentTime || 0;
