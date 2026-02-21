@@ -313,6 +313,12 @@ class Api:
             {"name": "Nightride FM", "url": "https://stream.nightride.fm/nightride.mp3", "genre": "Synthwave"},
             {"name": "BBC Radio 1", "url": "http://stream.live.vc.bbc.co.uk/bbc_radio_one", "genre": "Pop"}
         ]    
+    
+    def update_radio_discord(self, title, station):
+        """Updates Discord Rich Presence specifically for Radio streams."""
+        if self._discord:
+            # We use a radio icon or the app logo as the large image
+            self._discord.update(title, f"Listening to {station}", "app_logo")
 
 # --- FAVOURITES API ---
 
