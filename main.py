@@ -311,7 +311,8 @@ class Api:
         return [
             {"name": "Lofi Girl", "url": "https://lofi.stream.laut.fm/lofi", "genre": "Lofi"},
             {"name": "Nightride FM", "url": "https://stream.nightride.fm/nightride.mp3", "genre": "Synthwave"},
-            {"name": "BBC Radio 1", "url": "http://stream.live.vc.bbc.co.uk/bbc_radio_one", "genre": "Pop"}
+            {"name": "BBC Radio 1", "url": "http://stream.live.vc.bbc.co.uk/bbc_radio_one", "genre": "Pop"},
+            {"name": "RADIO 21", "url": "https://radio21.streamabc.net/radio21-hannover-mp3-192-3735655?sABC=690695p5%230%23q6ss393s0rn89n5s70n8q4721287ssr5%23jro&aw_0_1st.playerid=web&amsparams=playerid:web;skey:1762039237", "genre": "Rock n' Pop"}
         ]    
     
     def update_radio_discord(self, title, station):
