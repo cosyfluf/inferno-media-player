@@ -112,6 +112,12 @@ async function selectTrack(i) {
 }
 
 function playMedia(meta) {
+    if (typeof isRadioMode !== 'undefined') isRadioMode = false;
+    if (typeof radioMetadataInterval !== 'undefined' && radioMetadataInterval) {
+        clearInterval(radioMetadataInterval);
+        radioMetadataInterval = null;
+    }
+
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }

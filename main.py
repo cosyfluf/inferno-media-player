@@ -263,6 +263,7 @@ class Api:
                 if audio.tags:
                     if 'TIT2' in audio.tags: metadata["title"] = str(audio.tags['TIT2'].text[0])
                     if 'TPE1' in audio.tags: metadata["artist"] = str(audio.tags['TPE1'].text[0])
+                    if 'TALB' in audio.tags: metadata["album"] = str(audio.tags['TALB'].text[0])
                     for tag in audio.tags.values():
                         if isinstance(tag, APIC):
                             b64 = base64.b64encode(tag.data).decode('utf-8')
