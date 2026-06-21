@@ -429,10 +429,9 @@
         /* Media Display Styling */
         #media-display {
             margin-top: 50px;
-            aspect-ratio: 1/1   ;
-            width: auto;
-            max-width: 90%;
-            max-height: 45vh;
+            width: min(500px, 80vw, 45vh);
+            height: min(500px, 80vw, 45vh);
+            flex-shrink: 0;
             background: #000;
             border: 1px solid #300;
             border-radius: 15px;
