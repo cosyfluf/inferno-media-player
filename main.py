@@ -285,8 +285,6 @@ class Api:
         
     def get_radio_metadata(self, url):
         """Extracts ICY metadata from a live stream."""
-        import re
-        import requests
         try:
             headers = {'Icy-MetaData': '1'}
             # We only read the first few KB to get the header
@@ -321,6 +319,20 @@ class Api:
         if self._discord:
             # We use a radio icon or the app logo as the large image
             self._discord.update(title, f"Listening to {station}", "app_logo")
+
+    def get_plugins(self):
+        """Scans the plugins directory for custom JS plugins."""
+        plugins_dir = Path(__file__).parent / "plugins"
+        if not plugins_dir.exists():
+            plugins_dir.mkdir()
+            
+        plugins = []
+        for file in plugins_dir.glob("*.js"):
+            try:
+                with open(file, "r", encoding="utf-8") as f:
+                    plugins.append({"name": file.name, "code": f.read()})
+            except: pass
+        return plugins
 
 # --- FAVOURITES API ---
 

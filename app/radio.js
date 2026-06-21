@@ -66,6 +66,12 @@ async function playRadio(url, stationName) {
         await audio.play();
         setupVisualizer(audio);
         
+        const initialMeta = { title: "Connecting...", artist: stationName, isRadio: true, path: url };
+        if (window.InfernoPluginAPI) {
+            window.InfernoPluginAPI.setCurrentMetadata(initialMeta);
+            window.InfernoPluginAPI.trigger('onPlay', initialMeta);
+        }
+        
         // --- WICHTIG: Sofortiges Update beim Start ---
         updateRadioInfo(url, stationName);
         
@@ -88,6 +94,12 @@ async function updateRadioInfo(url, stationName) {
             // 1. Update UI
             document.getElementById('title').innerText = currentSong;
             document.getElementById('details').innerText = currentStation;
+
+            const updatedMeta = { title: currentSong, artist: currentStation, isRadio: true, path: url };
+            if (window.InfernoPluginAPI) {
+                window.InfernoPluginAPI.setCurrentMetadata(updatedMeta);
+                window.InfernoPluginAPI.trigger('onTrackChange', updatedMeta);
+            }
 
             // 2. Update Discord via Python
             await window.pywebview.api.update_radio_discord(currentSong, currentStation);

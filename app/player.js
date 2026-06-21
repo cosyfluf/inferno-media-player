@@ -13,6 +13,53 @@ let isLoop = false;
 let isDragging = false; // needed for progress bar dragging
 
 let audioCtx, analyser, sourceAudio, sourceVideo;
+let currentMetadata = null; // Speichert die aktuellen Metadaten
+
+// --- PLUGIN API ---
+window.InfernoPluginAPI = {
+    getAudioContext: () => audioCtx,
+    getAnalyser: () => analyser,
+    getCurrentMedia: () => current,
+    getCurrentMetadata: () => currentMetadata,
+    setCurrentMetadata: (meta) => { currentMetadata = meta; },
+    
+    // Helper to get raw frequency data (0-255) for EQ/Visualizers
+    getFrequencyData: () => {
+        if (!analyser) return null;
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+        return dataArray;
+    },
+    
+    // Helper to get raw waveform data
+    getTimeDomainData: () => {
+        if (!analyser) return null;
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteTimeDomainData(dataArray);
+        return dataArray;
+    },
+    
+    // Plugin Event System
+    events: {
+        onPlay: [],
+        onPause: [],
+        onTrackChange: []
+    },
+    
+    on: function(eventName, callback) {
+        if (this.events[eventName]) {
+            this.events[eventName].push(callback);
+        }
+    },
+    
+    trigger: function(eventName, data) {
+        if (this.events[eventName]) {
+            this.events[eventName].forEach(cb => {
+                try { cb(data); } catch(e) { console.error("Plugin Error:", e); }
+            });
+        }
+    }
+};
 
 /*-- PROGRESS BAR LOGIC --*/
 if (progressBar) {
@@ -112,6 +159,8 @@ async function selectTrack(i) {
 }
 
 function playMedia(meta) {
+    currentMetadata = meta; // Speichere die Metadaten für Plugins
+    
     if (typeof isRadioMode !== 'undefined') isRadioMode = false;
     if (typeof radioMetadataInterval !== 'undefined' && radioMetadataInterval) {
         clearInterval(radioMetadataInterval);
@@ -155,6 +204,8 @@ function playMedia(meta) {
     current.play().then(() => {
         playIcon.setAttribute('d', "M6 19h4V5H6v14zm8-14v14h4V5h-4z");
         setupVisualizer(current);
+        window.InfernoPluginAPI.trigger('onTrackChange', meta);
+        window.InfernoPluginAPI.trigger('onPlay', meta);
     }).catch(e => console.error("Playback failed:", e));
 }
 
@@ -162,9 +213,11 @@ function togglePlay() {
     if (current.paused) {
         current.play();
         playIcon.setAttribute('d', "M6 19h4V5H6v14zm8-14v14h4V5h-4z");
+        window.InfernoPluginAPI.trigger('onPlay', { path: current.src });
     } else {
         current.pause();
         playIcon.setAttribute('d', "M8 5v14l11-7z");
+        window.InfernoPluginAPI.trigger('onPause', { path: current.src });
     }
 }
 document.addEventListener('keydown', (event) => {
