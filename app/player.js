@@ -168,7 +168,7 @@ function playMedia(meta) {
     }
 
     if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
     }
     if (audioCtx.state === 'suspended') audioCtx.resume();
 
