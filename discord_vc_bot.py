@@ -6,6 +6,9 @@ import asyncio
 import os
 from dotenv import load_dotenv
 import queue
+import urllib.parse
+import requests
+import re
 
 # Lade Umgebungsvariablen aus der .env Datei
 load_dotenv()
@@ -23,6 +26,24 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 current_vc = None
 audio_source = None
+
+def get_itunes_cover_url(title, artist):
+    """Sucht über die kostenlose iTunes API nach dem Cover (ohne Keys)."""
+    clean_title = re.sub(r'[\(\[][^\)\]]*[\)\]]', '', title).strip()
+    clean_artist = re.sub(r'[\(\[][^\)\]]*[\)\]]', '', artist).strip()
+    try:
+        query = f"{clean_title} {clean_artist}"
+        url = f"https://itunes.apple.com/search?term={urllib.parse.quote(query)}&entity=musicTrack&limit=1"
+        response = requests.get(url, timeout=3)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("resultCount", 0) > 0:
+                artwork_url = data["results"][0].get("artworkUrl100", "")
+                if artwork_url:
+                    return artwork_url.replace("100x100bb.jpg", "600x600bb.jpg")
+    except Exception:
+        pass
+    return None
 
 class WSAudioSource(discord.AudioSource):
     """Liest Live PCM-Daten vom WebSocket und sendet sie an Discord mit Buffering."""
@@ -103,15 +124,34 @@ async def handle_update(request):
         
         # Rich Presence Updaten
         if action in ["play", "track_change"]:
+            # Cover aus den empfangenen Metadaten holen (sp_cover oder cover, falls es eine URL ist)
+            cover_url = meta.get("sp_cover") or meta.get("cover")
+            
+            # Fallback: Falls keine URL übergeben wurde, sucht der Bot das Cover über die iTunes API
+            if not cover_url or not cover_url.startswith("http"):
+                cover_url = get_itunes_cover_url(title, artist)
+            
+            assets = {}
+            if cover_url:
+                assets["large_image"] = cover_url
+                assets["large_text"] = "Inferno Media Player"
+            else:
+                assets["large_image"] = "app_logo"
+                assets["large_text"] = "Inferno Media Player"
+
             activity = discord.Activity(
                 type=discord.ActivityType.listening, 
-                name=f"{title} - {artist}"
+                name=f"{title} - {artist}",
+                assets=assets
             )
             await bot.change_presence(activity=activity)
+            
         elif action == "pause":
+            assets = {"large_image": "app_logo", "large_text": "Pausiert"}
             await bot.change_presence(activity=discord.Activity(
                 type=discord.ActivityType.listening, 
-                name="Pausiert..."
+                name="Pausiert...",
+                assets=assets
             ))
             
         return web.json_response({"status": "ok"})
@@ -159,7 +199,7 @@ async def web_server():
     """Startet den lokalen Webserver für das JS-Plugin"""
     app = web.Application()
     app.router.add_post('/update', handle_update)
-    app.router.add_get('/ws', websocket_handler) # NEU: WebSocket Route
+    app.router.add_get('/ws', websocket_handler)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, '127.0.0.1', WEB_PORT)
