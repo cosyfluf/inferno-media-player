@@ -168,6 +168,7 @@ async function viewFavourite(id) {
         coverImg.style.display = "block";
     }
 
+    currentFavTracks = tracks;
     renderFavouriteTracks(tracks, fav.id);
 }
 
@@ -177,7 +178,7 @@ function renderFavouriteTracks(tracks, favId) {
         const coverSrc = f.cover && f.cover !== "" ? f.cover : 'alt.png';
         const escapedPath = f.path.replace(/\\/g, '\\\\');
         return `
-        <div class="playlist-item" id="favitem-${i}" onclick="selectTrackByPath('${escapedPath}', ${i})">
+        <div class="playlist-item" id="favitem-${i}" onclick="selectFavTrack(${i})">
             <img class="pl-cover-mini" src="${coverSrc}" onerror="this.src='alt.png'">
             <div class="pl-text-container">
                 <div class="pl-title">${f.name || f.filename}</div>
@@ -193,13 +194,6 @@ function renderFavouriteTracks(tracks, favId) {
     }).join('');
 }
 
-async function selectTrackByPath(path, localIndex) {
-    const meta = await window.pywebview.api.get_metadata(path);
-    const globalIdx = playlist.findIndex(p => p.path === path);
-    if (globalIdx >= 0) index = globalIdx;
-    playMedia(meta);
-}
-
 async function removeTrackFromFav(favId, trackPath, localIndex) {
     const fav = favourites.find(f => f.id === favId);
     if (!fav) return;
@@ -211,6 +205,7 @@ async function removeTrackFromFav(favId, trackPath, localIndex) {
 
 async function backToLocalFiles() {
     isViewingFavourite = false;
+    currentFavTracks = [];
     document.getElementById('back-to-local').style.display = 'none';
     document.getElementById('title').innerText = "Ready for INFERNO?";
     document.getElementById('details').innerText = "Select a track from your playlist";

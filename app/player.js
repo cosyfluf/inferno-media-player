@@ -194,25 +194,52 @@ document.addEventListener('keydown', (event) => {
     });
 
 
+function _findActiveIndex(list) {
+    const curPath = currentMetadata ? currentMetadata.path : null;
+    if (curPath) {
+        const idx = list.findIndex(t => t.path === curPath);
+        if (idx >= 0) return idx;
+    }
+    return list.indexOf(playlist[index]);
+}
+
 function playNext() {
     const list = getActivePlaylist();
     if (list.length === 0) return;
     if (isShuffle) {
         const randIdx = Math.floor(Math.random() * list.length);
-        selectTrack(playlist.indexOf(list[randIdx]));
+        selectTrackByList(list, randIdx);
     } else {
-        const currentInList = list.indexOf(playlist[index]);
-        const nextInList = (currentInList + 1) % list.length;
-        selectTrack(playlist.indexOf(list[nextInList]));
+        const cur = _findActiveIndex(list);
+        const next = (cur + 1) % list.length;
+        selectTrackByList(list, next);
     }
 }
 
 function playPrev() {
     const list = getActivePlaylist();
     if (list.length === 0) return;
-    const currentInList = list.indexOf(playlist[index]);
-    const prevInList = (currentInList - 1 + list.length) % list.length;
-    selectTrack(playlist.indexOf(list[prevInList]));
+    const cur = _findActiveIndex(list);
+    const prev = (cur - 1 + list.length) % list.length;
+    selectTrackByList(list, prev);
+}
+
+function selectTrackByList(list, idx) {
+    if (idx < 0 || idx >= list.length) return;
+    const track = list[idx];
+    if (typeof isViewingFavourite !== 'undefined' && isViewingFavourite) {
+        selectFavTrack(idx);
+    } else {
+        const globalIdx = playlist.findIndex(t => t.path === track.path);
+        if (globalIdx >= 0) selectTrack(globalIdx);
+        else playTrackByPath(track.path);
+    }
+}
+
+function playTrackByPath(path) {
+    callApi('get_metadata', path).then(meta => {
+        if (meta) playMedia(meta);
+    });
 }
 
 // --- MEDIA EVENTS ---
@@ -267,10 +294,11 @@ function fmt(s) {
 function randomSong() {
     const list = getActivePlaylist();
     if (list.length === 0) return;
-    const randomIndex = Math.floor(Math.random() * list.length);
-    const globalIndex = playlist.indexOf(list[randomIndex]);
-    if (playlist.length > 1 && globalIndex === index) return randomSong();
-    selectTrack(globalIndex);
+    const randIdx = Math.floor(Math.random() * list.length);
+    const track = list[randIdx];
+    const currentPath = currentMetadata ? currentMetadata.path : null;
+    if (list.length > 1 && track.path === currentPath) return randomSong();
+    selectTrackByList(list, randIdx);
 }
 async function selectTrack(i) {
     if (i < 0 || i >= playlist.length) return;
@@ -278,12 +306,28 @@ async function selectTrack(i) {
     
     document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
     const activeEl = document.getElementById(`item-${i}`);
-    
     if (activeEl) {
         activeEl.classList.add('active');
         activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     
     const meta = await callApi('get_metadata', playlist[index].path);
+    playMedia(meta);
+}
+
+async function selectFavTrack(favIdx) {
+    if (favIdx < 0 || favIdx >= currentFavTracks.length) return;
+    const track = currentFavTracks[favIdx];
+    const globalIdx = playlist.findIndex(t => t.path === track.path);
+    if (globalIdx >= 0) index = globalIdx;
+
+    document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
+    const activeEl = document.getElementById(`favitem-${favIdx}`);
+    if (activeEl) {
+        activeEl.classList.add('active');
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    const meta = await callApi('get_metadata', track.path);
     playMedia(meta);
 }

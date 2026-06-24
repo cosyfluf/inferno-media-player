@@ -1,4 +1,5 @@
 let filteredPlaylist = [];
+let currentFavTracks = [];
 
 function setPlaylistLoading(isLoading) {
     const loader = document.getElementById('playlist-loader');
@@ -13,7 +14,9 @@ function setPlaylistLoading(isLoading) {
 }
 
 function getActivePlaylist() {
-    return filteredPlaylist.length > 0 ? filteredPlaylist : playlist;
+    if (typeof isViewingFavourite !== 'undefined' && isViewingFavourite) return currentFavTracks;
+    if (filteredPlaylist.length > 0) return filteredPlaylist;
+    return playlist;
 }
 
 function refreshPlaylist() {
