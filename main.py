@@ -547,6 +547,25 @@ class Api:
             with open(path, "rb") as img_file:
                 return f"data:image/png;base64,{base64.b64encode(img_file.read()).decode('utf-8')}"
         return None
+
+    def save_stations(self, stations):
+        """Saves the radio stations list to stations_config.json."""
+        try:
+            with open(STATIONS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(stations, f, indent=4)
+            return True
+        except:
+            return False
+
+    def select_image_file(self):
+        """Opens a file dialog and returns the selected image as base64 data URL."""
+        root = tk.Tk(); root.withdraw()
+        path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.jpeg *.png *.webp")])
+        root.destroy()
+        if path:
+            with open(path, "rb") as img_file:
+                return f"data:image/png;base64,{base64.b64encode(img_file.read()).decode('utf-8')}"
+        return None
     
     
 def run():
