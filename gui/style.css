@@ -331,6 +331,7 @@
             align-items: center;
             justify-content: center;
             position: relative;
+            padding-top: 50px;
             background: radial-gradient(circle at center, #150000 0%, #000000 100%);
         }
 
@@ -828,6 +829,25 @@
         .add-to-fav-btn:hover {
             fill: #0f0; /* Green highlight for adding */
             transform: scale(1.2);
+        }
+
+        .heart-btn {
+            width: 18px;
+            height: 18px;
+            fill: #666;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-left: 5px;
+            flex-shrink: 0;
+        }
+
+        .heart-btn:hover {
+            fill: #ff4444;
+            transform: scale(1.2);
+        }
+
+        .heart-btn.liked {
+            fill: #ff4444;
         }
 
         /* --- RADIO SECTION (Spotify-style) --- */

@@ -41,9 +41,11 @@ function renderPlaylist(files) {
     playlist = files;
     filteredPlaylist = [];
     const container = document.getElementById('playlist');
+    const liked = typeof favourites !== 'undefined' ? favourites.find(f => f.name === 'Liked Songs') : null;
     container.innerHTML = playlist.map((f, i) => {
         const coverSrc = f.cover && f.cover !== "" ? f.cover : 'alt.png';
         const escapedPath = f.path.replace(/\\/g, '\\\\');
+        const isLiked = liked ? liked.tracks.includes(f.path) : false;
         return `
         <div class="playlist-item" id="item-${i}" onclick="selectTrack(${i})">
             <img class="pl-cover-mini" src="${coverSrc}" onerror="this.src='alt.png'">
@@ -51,6 +53,9 @@ function renderPlaylist(files) {
                 <div class="pl-title">${f.name || f.filename}</div>
                 <div class="pl-artist">${f.artist || 'Unknown Artist'}</div>
             </div>
+            <svg class="heart-btn ${isLiked ? 'liked' : ''}" data-path="${f.path}" viewBox="0 0 24 24" onclick="toggleLikeTrack(this.dataset.path, event)">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
             <svg class="add-to-fav-btn" viewBox="0 0 24 24" onclick="showFavSelector(event, '${escapedPath}')">
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
             </svg>

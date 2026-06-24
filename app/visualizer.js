@@ -166,9 +166,9 @@ function toggleAmbientGlowEffect(enabled) {
     isAmbientGlowEnabled = enabled;
     const glow = document.getElementById('ambient-glow');
     if (!glow) return;
-    if (enabled && cover.style.display !== 'none') {
+    if (enabled) {
         glow.classList.add('active');
-        if (cover.complete && cover.naturalWidth > 0) {
+        if (cover.style.display !== 'none' && cover.complete && cover.naturalWidth > 0) {
             getAverageColor(cover);
         }
     } else {

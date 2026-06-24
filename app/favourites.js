@@ -102,6 +102,37 @@ function showFavContextMenu(event, favId) {
     }, 100);
 }
 
+function getLikedSongs() {
+    let liked = favourites.find(f => f.name === 'Liked Songs');
+    if (!liked) {
+        liked = { id: Date.now(), name: 'Liked Songs', image: 'alt.png', tracks: [] };
+        favourites.push(liked);
+    }
+    return liked;
+}
+
+function isTrackLiked(path) {
+    const liked = favourites.find(f => f.name === 'Liked Songs');
+    return liked ? liked.tracks.includes(path) : false;
+}
+
+function toggleLikeTrack(path, event) {
+    if (event) event.stopPropagation();
+    const liked = getLikedSongs();
+    const idx = liked.tracks.indexOf(path);
+    if (idx >= 0) liked.tracks.splice(idx, 1);
+    else liked.tracks.push(path);
+    window.pywebview.api.save_favourites_list(favourites);
+    renderFavouritesSidebar();
+    const items = document.querySelectorAll('.playlist-item');
+    items.forEach(el => {
+        const heart = el.querySelector('.heart-btn');
+        if (heart && heart.dataset.path === path) {
+            heart.classList.toggle('liked', idx < 0);
+        }
+    });
+}
+
 function showFavSelector(event, trackPath) {
     event.stopPropagation();
     const old = document.querySelector('.fav-selector');
