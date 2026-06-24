@@ -72,9 +72,12 @@
 
         <div class="main-title">INFERNO</div>
 
-        <div id="media-display">
-            <img id="cover" src="alt.png" crossorigin="anonymous" style="display:none;" onerror="this.src='alt.png'; this.onerror=null;">
-            <video id="video" style="display:none;" crossorigin="anonymous"></video>
+        <div id="media-display-wrap">
+            <div id="ambient-glow"></div>
+            <div id="media-display">
+                <img id="cover" src="alt.png" crossorigin="anonymous" style="display:none;" onerror="this.src='alt.png'; this.onerror=null;">
+                <video id="video" style="display:none;" crossorigin="anonymous"></video>
+            </div>
         </div>
 
         <div class="info">
@@ -189,6 +192,16 @@
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="dynamic-color-toggle-settings" checked onchange="toggleDynamicColor(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-block">
+                    <div class="setting-info">
+                        <label class="label-main">AMBIENT GLOW</label>
+                        <p class="desc-main">Extend dominant colors behind album art like YouTube.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="ambient-glow-toggle-settings" onchange="toggleAmbientGlow(this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>

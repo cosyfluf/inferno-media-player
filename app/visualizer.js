@@ -159,6 +159,31 @@ function rgbToHsl(r, g, b) {
     return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
+// --- AMBIENT GLOW ---
+let isAmbientGlowEnabled = false;
+
+function toggleAmbientGlowEffect(enabled) {
+    isAmbientGlowEnabled = enabled;
+    const glow = document.getElementById('ambient-glow');
+    if (!glow) return;
+    if (enabled && cover.style.display !== 'none') {
+        glow.classList.add('active');
+        if (cover.complete && cover.naturalWidth > 0) {
+            getAverageColor(cover);
+        }
+    } else {
+        glow.classList.remove('active');
+    }
+}
+
+function updateAmbientGlow(color) {
+    const glow = document.getElementById('ambient-glow');
+    if (!glow || !isAmbientGlowEnabled) return;
+    const rgb = `${color.r}, ${color.g}, ${color.b}`;
+    glow.style.background = `radial-gradient(circle, rgba(${rgb},0.5) 0%, rgba(${rgb},0.15) 40%, transparent 70%)`;
+    glow.classList.add('active');
+}
+
 // GET COVER COLOR
 // Global state to track the current color and animation frame
 let currentColor = { r: 255, g: 0, b: 0 }; 
@@ -232,13 +257,22 @@ function getAverageColor(imgElement) {
                 b: Math.floor(b / count)
             };
             
-            // Trigger the smooth transition instead of setting it instantly
-            animateColorTransition(result);
+            if (typeof isDynamicColorEnabled !== 'undefined' && isDynamicColorEnabled) {
+                animateColorTransition(result);
+            }
+            if (typeof isAmbientGlowEnabled !== 'undefined' && isAmbientGlowEnabled) {
+                updateAmbientGlow(result);
+            }
             
             resolve(result);
         } catch (e) {
             const fallback = { r: 255, g: 0, b: 0 };
-            animateColorTransition(fallback);
+            if (typeof isDynamicColorEnabled !== 'undefined' && isDynamicColorEnabled) {
+                animateColorTransition(fallback);
+            }
+            if (typeof isAmbientGlowEnabled !== 'undefined' && isAmbientGlowEnabled) {
+                updateAmbientGlow(fallback);
+            }
             resolve(fallback);
         }
     });

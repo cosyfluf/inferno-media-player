@@ -213,7 +213,8 @@ class Api:
             default = {
                 "default_path": str(Path.home() / "Music"),
                 "discord_client_id": "1471223610315247616",
-                "devtools": True
+                "devtools": True,
+                "ambient_glow": False
             }
             self.save_config_dict(default)
             return default
@@ -223,9 +224,12 @@ class Api:
                 if "devtools" not in cfg:
                     cfg["devtools"] = True
                     self.save_config_dict(cfg)
+                if "ambient_glow" not in cfg:
+                    cfg["ambient_glow"] = False
+                    self.save_config_dict(cfg)
                 return cfg
         except:
-            return {"default_path": str(Path.home() / "Music"), "devtools": True}
+            return {"default_path": str(Path.home() / "Music"), "devtools": True, "ambient_glow": False}
 
     def save_config_dict(self, config_dict):
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
@@ -240,6 +244,11 @@ class Api:
 
     def set_devtools(self, enabled):
         self._config["devtools"] = enabled
+        self.save_config_dict(self._config)
+        return enabled
+
+    def set_ambient_glow(self, enabled):
+        self._config["ambient_glow"] = enabled
         self.save_config_dict(self._config)
         return enabled
 

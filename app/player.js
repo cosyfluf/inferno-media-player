@@ -6,10 +6,9 @@ const progressBar = document.getElementById('progress-bar');
 const progressFill = document.getElementById('progress-fill');
 
 cover.onload = async () => {
-    if (typeof isDynamicColorEnabled !== 'undefined' && isDynamicColorEnabled) {
-        const colorData = await getAverageColor(cover);
-        currentThemeColor = { r: colorData.r, g: colorData.g, b: colorData.b };
-        document.documentElement.style.setProperty('--dynamic', colorData.hex);
+    if (typeof isDynamicColorEnabled !== 'undefined' && isDynamicColorEnabled ||
+        typeof isAmbientGlowEnabled !== 'undefined' && isAmbientGlowEnabled) {
+        await getAverageColor(cover);
     }
 };
 

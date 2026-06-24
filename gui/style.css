@@ -427,6 +427,32 @@
         }
 
         /* Media Display Styling */
+        #media-display-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        #ambient-glow {
+            position: absolute;
+            width: min(500px, 80vw, 45vh);
+            height: min(500px, 80vw, 45vh);
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0;
+            transition: opacity 0.8s ease, background 1s ease;
+            pointer-events: none;
+            z-index: 0;
+            transform: scale(1.4);
+            background: radial-gradient(circle, rgba(255,0,0,0.4) 0%, transparent 70%);
+        }
+
+        #ambient-glow.active {
+            opacity: 1;
+        }
+
         #media-display {
             margin-top: 50px;
             width: min(500px, 80vw, 45vh);
@@ -439,8 +465,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 25px;
             box-shadow: var(--glow);
+            position: relative;
+            z-index: 1;
         }
 
         #cover {

@@ -16,6 +16,8 @@ function toggleSettings(show) {
         callApi('load_config').then(cfg => {
             const dt = document.getElementById('devtools-toggle');
             if (dt && cfg) dt.checked = cfg.devtools === true;
+            const ag = document.getElementById('ambient-glow-toggle-settings');
+            if (ag && cfg) ag.checked = cfg.ambient_glow === true;
         });
     } else {
         overlay.style.display = 'none';
@@ -55,14 +57,26 @@ function syncDynamicColor(enabled) {
     const mainToggle = document.getElementById('dynamic-color-toggle');
     if (mainToggle) mainToggle.checked = enabled;
     
-    // Call your existing dynamic color function
     if (typeof toggleDynamicColor === 'function') {
         toggleDynamicColor(enabled);
     }
 }
 
+function syncAmbientGlow(enabled) {
+    const mainToggle = document.getElementById('ambient-glow-toggle');
+    if (mainToggle) mainToggle.checked = enabled;
+}
+
 function toggleDevTools(enabled) {
     callApi('set_devtools', enabled);
+}
+
+function toggleAmbientGlow(enabled) {
+    syncAmbientGlow(enabled);
+    if (typeof toggleAmbientGlowEffect === 'function') {
+        toggleAmbientGlowEffect(enabled);
+    }
+    callApi('set_ambient_glow', enabled);
 }
 
 function updateSettingsVolume(val) {
@@ -87,8 +101,16 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     const burger = document.querySelector('.burger');
     if (burger) {
-        // Remove the old href navigation and use our new overlay function
         burger.removeAttribute('onclick'); 
         burger.onclick = () => toggleSettings(true);
     }
+
+    callApi('load_config').then(cfg => {
+        if (cfg && typeof toggleAmbientGlowEffect === 'function') {
+            const enabled = cfg.ambient_glow === true;
+            toggleAmbientGlowEffect(enabled);
+            const ag = document.getElementById('ambient-glow-toggle-settings');
+            if (ag) ag.checked = enabled;
+        }
+    });
 });
