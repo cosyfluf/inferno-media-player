@@ -116,21 +116,34 @@ function isTrackLiked(path) {
     return liked ? liked.tracks.includes(path) : false;
 }
 
-function toggleLikeTrack(path, event) {
-    if (event) event.stopPropagation();
+function currentFilePath() {
+    if (!currentMetadata || !currentMetadata.path) return null;
+    try {
+        const u = new URL(currentMetadata.path);
+        return u.searchParams.get('path');
+    } catch { return currentMetadata.path; }
+}
+
+function updateLikeBtn() {
+    const btn = document.getElementById('like-btn');
+    if (!btn) return;
+    const path = currentFilePath();
+    if (!path) return;
+    const liked = favourites.find(f => f.name === 'Liked Songs');
+    const isLiked = liked ? liked.tracks.includes(path) : false;
+    btn.classList.toggle('liked', isLiked);
+}
+
+function toggleLikeCurrent() {
+    const path = currentFilePath();
+    if (!path) return;
     const liked = getLikedSongs();
     const idx = liked.tracks.indexOf(path);
     if (idx >= 0) liked.tracks.splice(idx, 1);
     else liked.tracks.push(path);
     window.pywebview.api.save_favourites_list(favourites);
     renderFavouritesSidebar();
-    const items = document.querySelectorAll('.playlist-item');
-    items.forEach(el => {
-        const heart = el.querySelector('.heart-btn');
-        if (heart && heart.dataset.path === path) {
-            heart.classList.toggle('liked', idx < 0);
-        }
-    });
+    updateLikeBtn();
 }
 
 function showFavSelector(event, trackPath) {

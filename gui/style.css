@@ -831,23 +831,9 @@
             transform: scale(1.2);
         }
 
-        .heart-btn {
-            width: 18px;
-            height: 18px;
-            fill: #666;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-left: 5px;
-            flex-shrink: 0;
-        }
-
-        .heart-btn:hover {
-            fill: #ff4444;
-            transform: scale(1.2);
-        }
-
         .heart-btn.liked {
-            fill: #ff4444;
+            fill: #ff4444 !important;
+            filter: drop-shadow(0 0 8px rgba(255, 68, 68, 0.6));
         }
 
         /* --- RADIO SECTION (Spotify-style) --- */

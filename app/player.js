@@ -125,6 +125,7 @@ async function showInFolder(path) {
 
 function playMedia(meta) {
     currentMetadata = meta; // Speichere die Metadaten für Plugins
+    if (typeof updateLikeBtn === 'function') updateLikeBtn();
     
     if (typeof isRadioMode !== 'undefined') isRadioMode = false;
     if (typeof radioMetadataInterval !== 'undefined' && radioMetadataInterval) {
