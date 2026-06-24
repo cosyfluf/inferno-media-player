@@ -803,7 +803,57 @@
             transform: scale(1.2);
         }
 
-        /* Playlist Context Menu (simple) */
+        /* --- RADIO SECTION (Spotify-style) --- */
+#radio-section {
+    margin: 8px 10px;
+    border-radius: 8px;
+    background: rgba(255, 0, 0, 0.03);
+    border: 1px solid rgba(255, 0, 0, 0.08);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+#radio-section .sidebar-header {
+    padding: 10px 14px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+#radio-section .sidebar-header:hover {
+    background: rgba(255, 0, 0, 0.06);
+}
+
+#radio-section #radio-container {
+    max-height: 0px;
+}
+
+#radio-section .playlist-item {
+    padding: 6px 10px;
+    margin: 0 4px;
+    border-radius: 4px;
+}
+
+#radio-section .playlist-item .pl-title {
+    font-size: 12px;
+}
+
+#radio-section .playlist-item .pl-artist {
+    font-size: 10px;
+}
+
+#radio-section .menu-item {
+    padding: 8px 14px;
+    font-size: 11px;
+    border-bottom: none;
+}
+
+/* Playlist Context Menu (simple) */
         .fav-selector {
             position: absolute;
             background: #111;

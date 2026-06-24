@@ -2,14 +2,14 @@
 let radioList = [];
 let radioMetadataInterval = null;
 let isRadioMode = false;
-let isRadioExpanded = true;
+let isRadioExpanded = false;
 
 window.addEventListener('pywebviewready', async () => {
     radioList = await window.pywebview.api.get_default_radios();
     renderRadioList();
     
-    const container = document.getElementById('radio-container');
-    container.style.maxHeight = container.scrollHeight + "px";
+    const icon = document.getElementById('radio-toggle-icon');
+    if (icon) icon.style.transform = "rotate(-90deg)";
 });
 
 function toggleRadioList() {

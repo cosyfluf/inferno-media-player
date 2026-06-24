@@ -31,16 +31,17 @@
             </div>
         </div>
         <!--webradio-->
-        <div class="sidebar-header" onclick="toggleRadioList()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding-top: 20px; font-size: 18px;">
-            WEB RADIO
-            <span id="radio-toggle-icon" style="transition: transform 0.3s; font-size: 12px;">▼</span>
-        </div>
-
-        <div id="radio-container" style="overflow: hidden; transition: max-height 0.3s ease-out;">
-            <div id="radio-list">
-                <!-- Radio stations will appear here -->
+        <div id="radio-section">
+            <div class="sidebar-header" onclick="toggleRadioList()">
+                📻 WEB RADIO
+                <span id="radio-toggle-icon" style="transition: transform 0.3s; font-size: 10px;">▼</span>
             </div>
-            <div class="menu-item" onclick="addCustomRadio()" style="font-size: 13px; color: #888;">➕ Add Station</div>
+            <div id="radio-container" style="overflow: hidden; transition: max-height 0.3s ease-out;">
+                <div id="radio-list">
+                    <!-- Radio stations will appear here -->
+                </div>
+                <div class="menu-item" onclick="addCustomRadio()" style="font-size: 12px; color: #888;">➕ Add Station</div>
+            </div>
         </div>
     
         <!-- 4. Library Section -->
