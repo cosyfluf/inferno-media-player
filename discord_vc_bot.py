@@ -118,42 +118,30 @@ async def handle_update(request):
         data = await request.json()
         action = data.get("action")
         meta = data.get("meta", {})
-        
+
         title = meta.get("title", "Unknown")
         artist = meta.get("artist", "Unknown")
-        
-        # Rich Presence Updaten
-        if action in ["play", "track_change"]:
-            # Cover aus den empfangenen Metadaten holen (sp_cover oder cover, falls es eine URL ist)
-            cover_url = meta.get("sp_cover") or meta.get("cover")
-            
-            # Fallback: Falls keine URL übergeben wurde, sucht der Bot das Cover über die iTunes API
-            if not cover_url or not cover_url.startswith("http"):
-                cover_url = get_itunes_cover_url(title, artist)
-            
-            assets = {}
-            if cover_url:
-                assets["large_image"] = cover_url
-                assets["large_text"] = "Inferno Media Player"
-            else:
-                assets["large_image"] = "app_logo"
-                assets["large_text"] = "Inferno Media Player"
 
+        if action in ["play", "track_change"]:
             activity = discord.Activity(
-                type=discord.ActivityType.listening, 
-                name=f"{title} - {artist}",
-                assets=assets
+                type=discord.ActivityType.listening,
+                name=f"{title}",
+                state=f"by {artist}",
+                details="Inferno Media Player"
             )
             await bot.change_presence(activity=activity)
-            
+
         elif action == "pause":
-            assets = {"large_image": "app_logo", "large_text": "Pausiert"}
-            await bot.change_presence(activity=discord.Activity(
-                type=discord.ActivityType.listening, 
-                name="Pausiert...",
-                assets=assets
-            ))
-            
+            activity = discord.Activity(
+                type=discord.ActivityType.listening,
+                name="Paused",
+                state="Inferno Media Player"
+            )
+            await bot.change_presence(activity=activity)
+
+        elif action == "stop":
+            await bot.change_presence(activity=None)
+
         return web.json_response({"status": "ok"})
     except Exception as e:
         print(f"API Error: {e}")

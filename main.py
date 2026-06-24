@@ -18,6 +18,7 @@ import platform
 import subprocess
 from pypresence import Presence
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # --- DOWNLOADER LIBRARIES ---
 import yt_dlp
@@ -211,15 +212,20 @@ class Api:
         if not CONFIG_FILE.exists():
             default = {
                 "default_path": str(Path.home() / "Music"),
-                "discord_client_id": "1471223610315247616"
+                "discord_client_id": "1471223610315247616",
+                "devtools": True
             }
             self.save_config_dict(default)
             return default
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                cfg = json.load(f)
+                if "devtools" not in cfg:
+                    cfg["devtools"] = True
+                    self.save_config_dict(cfg)
+                return cfg
         except:
-            return {"default_path": str(Path.home() / "Music")}
+            return {"default_path": str(Path.home() / "Music"), "devtools": True}
 
     def save_config_dict(self, config_dict):
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
@@ -228,6 +234,14 @@ class Api:
     def save_config(self, path):
         self._config["default_path"] = path
         self.save_config_dict(self._config)
+
+    def get_config(self):
+        return self._config
+
+    def set_devtools(self, enabled):
+        self._config["devtools"] = enabled
+        self.save_config_dict(self._config)
+        return enabled
 
     def _progress_hook(self, d):
         if d['status'] == 'downloading':
@@ -293,19 +307,35 @@ class Api:
         exts = ('.mp3', '.ogg', '.wav', '.mp4', '.webm')
         try:
             if not search_path.exists(): return []
+            all_files = []
             for file in search_path.rglob('*'):
                 if file.suffix.lower() in exts:
-                    meta = self.get_metadata(str(file.absolute()), update_discord=False)
-                    files_list.append({
-                        "name": meta["title"],
-                        "artist": meta["artist"],
-                        "path": str(file.absolute()),
-                        "cover": meta["cover"],
-                        "duration": meta["duration"],
-                        "filename": str(file.name)
-                    })
+                    all_files.append(str(file.absolute()))
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                fut_map = {executor.submit(self._scan_single, fp): fp for fp in all_files}
+                for fut in as_completed(fut_map):
+                    try:
+                        result = fut.result()
+                        if result:
+                            files_list.append(result)
+                    except:
+                        pass
         except: pass
         return sorted(files_list, key=lambda x: x['name'])
+
+    def _scan_single(self, file_path):
+        try:
+            meta = self.get_metadata(file_path, update_discord=False)
+            return {
+                "name": meta["title"],
+                "artist": meta["artist"],
+                "path": file_path,
+                "cover": meta["cover"],
+                "duration": meta["duration"],
+                "filename": str(Path(file_path).name)
+            }
+        except:
+            return None
 
     def get_metadata(self, file_path, update_discord=True):
         path_str = file_path
@@ -422,6 +452,60 @@ class Api:
         if self._discord:
             self._discord.update(title, f"Listening to {station}", station_image)
 
+    def start_folder_watch(self):
+        """Start a background thread that polls the media folder for changes."""
+        def _watcher():
+            last_scan = set()
+            while True:
+                time.sleep(5)
+                try:
+                    exts = ('.mp3', '.ogg', '.wav', '.mp4', '.webm')
+                    current = set()
+                    for f in Path(self.current_path).rglob('*'):
+                        if f.suffix.lower() in exts:
+                            current.add(str(f.absolute()))
+                    if current != last_scan:
+                        if last_scan:  # Skip first scan (already loaded)
+                            if window:
+                                try:
+                                    window.evaluate_js('refreshPlaylist()')
+                                except:
+                                    pass
+                        last_scan = current
+                except:
+                    pass
+
+        t = threading.Thread(target=_watcher, daemon=True)
+        t.start()
+
+    def start_plugin_watch(self):
+        """Watch the plugins directory for changes and auto-reload."""
+        plugins_dir = Path(__file__).parent / "plugins"
+        if not plugins_dir.exists():
+            plugins_dir.mkdir()
+
+        def _watcher():
+            last_mtimes = {}
+            while True:
+                time.sleep(3)
+                try:
+                    current = {}
+                    for f in plugins_dir.glob("*.js"):
+                        current[f.name] = f.stat().st_mtime
+                    if current != last_mtimes:
+                        if last_mtimes:  # Skip first check
+                            if window:
+                                try:
+                                    window.evaluate_js('reloadPlugins()')
+                                except:
+                                    pass
+                        last_mtimes = current
+                except:
+                    pass
+
+        t = threading.Thread(target=_watcher, daemon=True)
+        t.start()
+
     def get_plugins(self):
         """Scans the plugins directory for custom JS plugins."""
         plugins_dir = Path(__file__).parent / "plugins"
@@ -469,6 +553,8 @@ def run():
     global window
     threading.Thread(target=start_server, daemon=True).start()
     api = Api()
+    api.start_folder_watch()
+    api.start_plugin_watch()
     window = webview.create_window(
         'Inferno Media Player', 
         'index.html', 
@@ -478,8 +564,7 @@ def run():
         min_size=(1150, 687),
         background_color='#050000'
     )
-    # AKTIVIERT DEN INSPEKTOR (Rechtsklick -> Element untersuchen)
-    webview.start(debug=True) 
+    webview.start(debug=api._config.get("devtools", True))
 
 if __name__ == '__main__':
     run()

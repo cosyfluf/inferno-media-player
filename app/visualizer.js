@@ -159,17 +159,6 @@ function rgbToHsl(r, g, b) {
     return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
-     // --- NEW: DYNAMIC COLOR DETECTION ---
-    cover.onload = async () => {
-        if (isDynamicColorEnabled) {
-            const colorData = await getAverageColor(cover);
-            // Update global variable for visualizer
-            currentThemeColor = { r: colorData.r, g: colorData.g, b: colorData.b };
-            // Update CSS variables for UI glow/borders
-            document.documentElement.style.setProperty('none', colorData.hex);
-        }
-    };
-
 // GET COVER COLOR
 // Global state to track the current color and animation frame
 let currentColor = { r: 255, g: 0, b: 0 }; 

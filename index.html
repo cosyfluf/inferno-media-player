@@ -152,6 +152,7 @@
             
             <div class="sidebar-header-small">SYSTEM</div>
             <div class="sidebar-item" onclick="toggleSettings(false)">Back to Player</div>
+            <div class="sidebar-item" onclick="switchSettingsTab(event, 'tab-system')">Developer Tools</div>
         </div>
     </nav>
 
@@ -204,6 +205,21 @@
                 </div>
             </section>
 
+            <!-- TAB: SYSTEM -->
+            <section id="tab-system" class="settings-tab-pane">
+                <h2 class="section-title-large">Developer Tools</h2>
+                <div class="setting-block">
+                    <div class="setting-info">
+                        <label class="label-main">DEV TOOLS (F12)</label>
+                        <p class="desc-main">Enable right-click inspector and debug console.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="devtools-toggle" onchange="toggleDevTools(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </section>
+
         </div>
 
         <!-- ESC BUTTON -->
@@ -244,6 +260,12 @@
 
     <audio id="audio" crossorigin="auto"></audio>
 
+    <script>
+        async function callApi(method, ...args) {
+            try { return await window.pywebview.api[method](...args); }
+            catch(e) { console.error('API call ' + method + ' failed:', e); return null; }
+        }
+    </script>
     <script src="app/visualizer.js"></script>
     <script src="app/playlist.js"></script>
     <script src="app/player.js"></script>

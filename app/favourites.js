@@ -1,11 +1,7 @@
 let favourites = [];
 let currentFavImage = null;
-let isViewingFavourite = false; // To track if we are looking at local files or a playlist
+let isViewingFavourite = false;
 
-
-// --- FAVOURITES LOGIC ---
-
-// Load favourites when app starts
 window.addEventListener('pywebviewready', async () => {
     favourites = await window.pywebview.api.load_favourites();
     renderFavouritesSidebar();
@@ -16,7 +12,7 @@ function closeFavModal() { document.getElementById('fav-modal').style.display = 
 
 async function selectFavImage() {
     const b64 = await window.pywebview.api.select_fav_image();
-    if(b64) {
+    if (b64) {
         currentFavImage = b64;
         document.getElementById('fav-image-preview').style.backgroundImage = `url(${b64})`;
         document.getElementById('fav-image-preview').innerText = "";
@@ -25,21 +21,20 @@ async function selectFavImage() {
 
 async function createNewFavourite() {
     const name = document.getElementById('fav-name-input').value;
-    if(!name) return alert("Please enter a name");
+    if (!name) return alert("Please enter a name");
 
     const newFav = {
         id: Date.now(),
         name: name,
         image: currentFavImage || 'alt.png',
-        tracks: [] // Paths stored here
+        tracks: []
     };
 
     favourites.push(newFav);
     await window.pywebview.api.save_favourites_list(favourites);
-    
+
     renderFavouritesSidebar();
     closeFavModal();
-    // Reset inputs
     document.getElementById('fav-name-input').value = "";
     currentFavImage = null;
     document.getElementById('fav-image-preview').style.backgroundImage = "none";
@@ -49,27 +44,75 @@ async function createNewFavourite() {
 function renderFavouritesSidebar() {
     const container = document.getElementById('favourites-list');
     container.innerHTML = favourites.map(fav => `
-        <div class="fav-item" onclick="viewFavourite(${fav.id})">
+        <div class="fav-item" onclick="viewFavourite(${fav.id})" oncontextmenu="showFavContextMenu(event, ${fav.id})">
             <img src="${fav.image}">
             <span>${fav.name}</span>
+            <span style="margin-left:auto;font-size:11px;color:#555;">${fav.tracks.length}</span>
         </div>
     `).join('');
 }
 
-// Shows a small menu to pick which playlist to add a song to
+function showFavContextMenu(event, favId) {
+    event.preventDefault();
+    const old = document.querySelector('.fav-selector');
+    if (old) old.remove();
+
+    const menu = document.createElement('div');
+    menu.className = 'fav-selector';
+    menu.style.left = event.clientX + "px";
+    menu.style.top = event.clientY + "px";
+
+    const renameItem = document.createElement('div');
+    renameItem.className = 'menu-item';
+    renameItem.style.fontSize = "12px";
+    renameItem.innerText = "✏ Rename";
+    renameItem.onclick = async () => {
+        const fav = favourites.find(f => f.id === favId);
+        if (!fav) return;
+        const newName = prompt("New name:", fav.name);
+        if (newName && newName.trim()) {
+            fav.name = newName.trim();
+            await window.pywebview.api.save_favourites_list(favourites);
+            renderFavouritesSidebar();
+        }
+        menu.remove();
+    };
+
+    const deleteItem = document.createElement('div');
+    deleteItem.className = 'menu-item';
+    deleteItem.style.fontSize = "12px";
+    deleteItem.style.color = "#ff4444";
+    deleteItem.innerText = "🗑 Delete";
+    deleteItem.onclick = async () => {
+        if (confirm("Delete this playlist?")) {
+            favourites = favourites.filter(f => f.id !== favId);
+            await window.pywebview.api.save_favourites_list(favourites);
+            renderFavouritesSidebar();
+            if (isViewingFavourite) backToLocalFiles();
+        }
+        menu.remove();
+    };
+
+    menu.appendChild(renameItem);
+    menu.appendChild(deleteItem);
+    document.body.appendChild(menu);
+
+    setTimeout(() => {
+        window.onclick = () => { menu.remove(); window.onclick = null; };
+    }, 100);
+}
+
 function showFavSelector(event, trackPath) {
     event.stopPropagation();
-    
-    // Remove old selector if exists
     const old = document.querySelector('.fav-selector');
-    if(old) old.remove();
+    if (old) old.remove();
 
     const selector = document.createElement('div');
     selector.className = 'fav-selector';
     selector.style.left = event.clientX + "px";
     selector.style.top = event.clientY + "px";
 
-    if(favourites.length === 0) {
+    if (favourites.length === 0) {
         selector.innerHTML = `<div class="menu-item">No Playlists</div>`;
     }
 
@@ -79,9 +122,10 @@ function showFavSelector(event, trackPath) {
         item.style.fontSize = "12px";
         item.innerText = "Add to: " + fav.name;
         item.onclick = async () => {
-            if(!fav.tracks.includes(trackPath)) {
+            if (!fav.tracks.includes(trackPath)) {
                 fav.tracks.push(trackPath);
                 await window.pywebview.api.save_favourites_list(favourites);
+                renderFavouritesSidebar();
             }
             selector.remove();
         };
@@ -89,8 +133,7 @@ function showFavSelector(event, trackPath) {
     });
 
     document.body.appendChild(selector);
-    
-    // Close when clicking elsewhere
+
     setTimeout(() => {
         window.onclick = () => { selector.remove(); window.onclick = null; };
     }, 100);
@@ -98,55 +141,82 @@ function showFavSelector(event, trackPath) {
 
 async function viewFavourite(id) {
     const fav = favourites.find(f => f.id === id);
-    if(!fav) return;
+    if (!fav) return;
 
     isViewingFavourite = true;
-    
-    // Show the back button in the sidebar
     document.getElementById('back-to-local').style.display = 'inline';
-    
-    // Convert stored paths back to full metadata objects
+
     const tracks = [];
-    for(let path of fav.tracks) {
+    for (let path of fav.tracks) {
         const meta = await window.pywebview.api.get_metadata(path, false);
         tracks.push({
             name: meta.title,
             artist: meta.artist,
             path: path,
             cover: meta.cover,
-            duration: meta.duration
+            duration: meta.duration,
+            _favId: fav.id
         });
     }
 
-    // Update main UI Header
     document.getElementById('title').innerText = fav.name;
     document.getElementById('details').innerText = "Favourite Playlist";
-    
-    // Update cover image if available
-    if(fav.image) {
+
+    if (fav.image) {
         const coverImg = document.getElementById('cover');
         coverImg.src = fav.image;
         coverImg.style.display = "block";
     }
 
-    renderPlaylist(tracks);
+    renderFavouriteTracks(tracks, fav.id);
 }
 
-// Function to return to the main local library
+function renderFavouriteTracks(tracks, favId) {
+    const container = document.getElementById('playlist');
+    container.innerHTML = tracks.map((f, i) => {
+        const coverSrc = f.cover && f.cover !== "" ? f.cover : 'alt.png';
+        const escapedPath = f.path.replace(/\\/g, '\\\\');
+        return `
+        <div class="playlist-item" id="favitem-${i}" onclick="selectTrackByPath('${escapedPath}', ${i})">
+            <img class="pl-cover-mini" src="${coverSrc}" onerror="this.src='alt.png'">
+            <div class="pl-text-container">
+                <div class="pl-title">${f.name || f.filename}</div>
+                <div class="pl-artist">${f.artist || 'Unknown Artist'}</div>
+            </div>
+            <svg class="show-folder-btn" viewBox="0 0 24 24" title="Remove from playlist" 
+                onclick="removeTrackFromFav(${favId}, '${escapedPath}', ${i}); event.stopPropagation();"
+                style="fill:#ff4444;opacity:1;">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+        </div>
+        `;
+    }).join('');
+}
+
+async function selectTrackByPath(path, localIndex) {
+    const meta = await window.pywebview.api.get_metadata(path);
+    const globalIdx = playlist.findIndex(p => p.path === path);
+    if (globalIdx >= 0) index = globalIdx;
+    playMedia(meta);
+}
+
+async function removeTrackFromFav(favId, trackPath, localIndex) {
+    const fav = favourites.find(f => f.id === favId);
+    if (!fav) return;
+    fav.tracks = fav.tracks.filter(p => p !== trackPath);
+    await window.pywebview.api.save_favourites_list(favourites);
+    renderFavouritesSidebar();
+    viewFavourite(favId);
+}
+
 async function backToLocalFiles() {
     isViewingFavourite = false;
-    
-    // Hide back button and reset info text
     document.getElementById('back-to-local').style.display = 'none';
     document.getElementById('title').innerText = "Ready for INFERNO?";
     document.getElementById('details').innerText = "Select a track from your playlist";
-    
-    // Trigger loader
+
     setPlaylistLoading(true);
-    
-    // Rescan the local folder and re-render the playlist
     const files = await window.pywebview.api.scan_folder();
-    if(files) renderPlaylist(files);
-    
+    if (files) renderPlaylist(files);
     setPlaylistLoading(false);
 }

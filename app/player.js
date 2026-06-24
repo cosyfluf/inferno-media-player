@@ -2,8 +2,16 @@ const audio = document.getElementById('audio');
 const video = document.getElementById('video');
 const cover = document.getElementById('cover');
 const playIcon = document.getElementById('play-icon');
-const progressBar = document.getElementById('progress-bar'); // progress bar container
-const progressFill = document.getElementById('progress-fill'); // progress fill element
+const progressBar = document.getElementById('progress-bar');
+const progressFill = document.getElementById('progress-fill');
+
+cover.onload = async () => {
+    if (typeof isDynamicColorEnabled !== 'undefined' && isDynamicColorEnabled) {
+        const colorData = await getAverageColor(cover);
+        currentThemeColor = { r: colorData.r, g: colorData.g, b: colorData.b };
+        document.documentElement.style.setProperty('--dynamic', colorData.hex);
+    }
+};
 
 let current = audio;
 let playlist = [];
@@ -39,6 +47,10 @@ window.InfernoPluginAPI = {
         return dataArray;
     },
     
+    registerCleanup: function(fn) {
+        if (typeof fn === 'function') _pluginCleanups.push(fn);
+    },
+
     // Plugin Event System
     events: {
         onPlay: [],
@@ -60,6 +72,16 @@ window.InfernoPluginAPI = {
         }
     }
 };
+
+function handleScrub(e) {
+    if (!current || !isFinite(current.duration)) return;
+    const rect = progressBar.getBoundingClientRect();
+    let offsetX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const pct = offsetX / rect.width;
+    current.currentTime = pct * current.duration;
+    progressFill.style.width = (pct * 100) + "%";
+    document.getElementById('t-cur').innerText = fmt(pct * current.duration);
+}
 
 /*-- PROGRESS BAR LOGIC --*/
 if (progressBar) {
@@ -85,77 +107,21 @@ if (progressBar) {
     });
 }
 
-function handleScrub(e) {
-    // prevent default behavior
-    e.preventDefault(); 
-
-    // test for valid media
-    if (!current || current.readyState < 1) {
-        console.log("Error: Media not ready.");
-        return;
-    }
-
-    const dur = current.duration;
-
-    // test for valid duration
-
-    if (!dur || isNaN(dur) || !isFinite(dur)) {
-        console.log("Error: Invalid duration (not yet loaded).");
-        return;
-    }
-
-    const rect = progressBar.getBoundingClientRect();
-    
-    // calculate click position
-    let clickX = e.clientX - rect.left;
-
-    // clamp limits
-    if (clickX < 0) clickX = 0;
-    if (clickX > rect.width) clickX = rect.width;
-
-    // calculate percentage and target time
-    const percentage = clickX / rect.width;
-    const targetTime = percentage * dur;
-
-    // safety log open by F12
-    console.log(`Scrubbing: ${Math.round(percentage*100)}% -> Time: ${targetTime.toFixed(2)}s`);
-
-    // time set and UI update
-    if (Number.isFinite(targetTime)) {
-        current.currentTime = targetTime;
-        
-        // optic update of progress bar and time text
-        progressFill.style.width = (percentage * 100) + "%";
-        document.getElementById('t-cur').innerText = fmt(targetTime);
-    }
-}
 async function changeFolder() {
-    const files = await window.pywebview.api.select_folder();
-    if(files) renderPlaylist(files);
+    const files = await callApi('select_folder');
+    if (files) renderPlaylist(files);
 }
 
 async function manualFile() {
-    const meta = await window.pywebview.api.select_file();
-    if(meta) {
+    const meta = await callApi('select_file');
+    if (meta) {
         document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
         playMedia(meta);
     }
 }
 
 async function showInFolder(path) {
-    if (window.pywebview && window.pywebview.api) {
-        await window.pywebview.api.show_in_folder(path);
-    }
-}
-
-async function selectTrack(i) {
-    index = i;
-    document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
-    const activeEl = document.getElementById(`item-${i}`);
-    if(activeEl) activeEl.classList.add('active');
-    
-    const meta = await window.pywebview.api.get_metadata(playlist[index].path);
-    playMedia(meta);
+    await callApi('show_in_folder', path);
 }
 
 function playMedia(meta) {
@@ -213,11 +179,11 @@ function togglePlay() {
     if (current.paused) {
         current.play();
         playIcon.setAttribute('d', "M6 19h4V5H6v14zm8-14v14h4V5h-4z");
-        window.InfernoPluginAPI.trigger('onPlay', { path: current.src });
+        window.InfernoPluginAPI.trigger('onPlay', currentMetadata || { path: current.src });
     } else {
         current.pause();
         playIcon.setAttribute('d', "M8 5v14l11-7z");
-        window.InfernoPluginAPI.trigger('onPause', { path: current.src });
+        window.InfernoPluginAPI.trigger('onPause', currentMetadata || { path: current.src });
     }
 }
 document.addEventListener('keydown', (event) => {
@@ -229,44 +195,25 @@ document.addEventListener('keydown', (event) => {
 
 
 function playNext() {
-    if (playlist.length === 0) return;
-    index = isShuffle ? Math.floor(Math.random() * playlist.length) : (index + 1) % playlist.length;
-    selectTrack(index);
+    const list = getActivePlaylist();
+    if (list.length === 0) return;
+    if (isShuffle) {
+        const randIdx = Math.floor(Math.random() * list.length);
+        selectTrack(playlist.indexOf(list[randIdx]));
+    } else {
+        const currentInList = list.indexOf(playlist[index]);
+        const nextInList = (currentInList + 1) % list.length;
+        selectTrack(playlist.indexOf(list[nextInList]));
+    }
 }
 
 function playPrev() {
-    if (playlist.length === 0) return;
-    index = (index - 1 + playlist.length) % playlist.length;
-    selectTrack(index);
+    const list = getActivePlaylist();
+    if (list.length === 0) return;
+    const currentInList = list.indexOf(playlist[index]);
+    const prevInList = (currentInList - 1 + list.length) % list.length;
+    selectTrack(playlist.indexOf(list[prevInList]));
 }
-
-/**
- * Calculates the new time based on mouse position and updates the UI/Media
- * @param {MouseEvent} e 
- */
-function handleScrub(e) {
-    if (!current || !isFinite(current.duration)) return;
-
-    const rect = progressBar.getBoundingClientRect();
-    
-    // Calculate horizontal offset relative to the progress bar container
-    let offsetX = e.clientX - rect.left;
-
-    // Clamp the value between 0 and the bar's full width
-    offsetX = Math.max(0, Math.min(offsetX, rect.width));
-
-    // Calculate percentage and target time
-    const percentage = offsetX / rect.width;
-    const targetTime = percentage * current.duration;
-
-    // Update the media playback position
-    current.currentTime = targetTime;
-
-    // Immediate UI feedback for the fill bar and the timestamp
-    progressFill.style.width = (percentage * 100) + "%";
-    document.getElementById('t-cur').innerText = fmt(targetTime);
-}
-
 
 // --- MEDIA EVENTS ---
 // --- MEDIA EVENTS ---
@@ -318,42 +265,25 @@ function fmt(s) {
 
 // --- RANDOM SONG FUNCTION ---
 function randomSong() {
-    // 1. Check if there are any songs in the playlist
-    if (playlist && playlist.length > 0) {
-        
-        // 2. Generate a random index between 0 and playlist length
-        const randomIndex = Math.floor(Math.random() * playlist.length);
-        
-        // 3. Avoid repeating the same song if possible
-        if (playlist.length > 1 && randomIndex === index) {
-            return randomSong(); // Try again
-        }
-
-        // 4. Use your existing selectTrack function to fetch metadata and play
-        selectTrack(randomIndex);
-    } else {
-        console.log("Playlist is empty, cannot play random song.");
-    }
+    const list = getActivePlaylist();
+    if (list.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * list.length);
+    const globalIndex = playlist.indexOf(list[randomIndex]);
+    if (playlist.length > 1 && globalIndex === index) return randomSong();
+    selectTrack(globalIndex);
 }
-// --- FAVOURITES / PLAYLISTS autoscroll ---
 async function selectTrack(i) {
+    if (i < 0 || i >= playlist.length) return;
     index = i;
     
-    // UI: Update active state classes
     document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
     const activeEl = document.getElementById(`item-${i}`);
     
     if (activeEl) {
         activeEl.classList.add('active');
-        
-        // AUTO-SCROLL: Scroll the active item to the center of the playlist container
-        activeEl.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     
-    // Metadata and playback logic
-    const meta = await window.pywebview.api.get_metadata(playlist[index].path);
+    const meta = await callApi('get_metadata', playlist[index].path);
     playMedia(meta);
 }

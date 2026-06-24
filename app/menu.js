@@ -8,12 +8,15 @@ function toggleSettings(show) {
     const overlay = document.getElementById('settings-overlay');
     if (show) {
         overlay.style.display = 'flex';
-        // Sync the settings volume slider with the current player volume
         const mainVolume = document.getElementById('volume-slider');
         const settingsVolume = document.getElementById('settings-volume');
         if (mainVolume && settingsVolume) {
             settingsVolume.value = mainVolume.value;
         }
+        callApi('load_config').then(cfg => {
+            const dt = document.getElementById('devtools-toggle');
+            if (dt && cfg) dt.checked = cfg.devtools === true;
+        });
     } else {
         overlay.style.display = 'none';
     }
@@ -56,6 +59,10 @@ function syncDynamicColor(enabled) {
     if (typeof toggleDynamicColor === 'function') {
         toggleDynamicColor(enabled);
     }
+}
+
+function toggleDevTools(enabled) {
+    callApi('set_devtools', enabled);
 }
 
 function updateSettingsVolume(val) {
