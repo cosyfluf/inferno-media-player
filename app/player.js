@@ -317,8 +317,15 @@ async function selectTrack(i) {
 async function selectFavTrack(favIdx) {
     if (favIdx < 0 || favIdx >= currentFavTracks.length) return;
     const track = currentFavTracks[favIdx];
+    if (!track || !track.path) return;
+
     const globalIdx = playlist.findIndex(t => t.path === track.path);
-    if (globalIdx >= 0) index = globalIdx;
+    if (globalIdx >= 0) {
+        selectTrack(globalIdx);
+    } else {
+        const meta = await callApi('get_metadata', track.path);
+        if (meta) playMedia(meta);
+    }
 
     document.querySelectorAll('.playlist-item').forEach(el => el.classList.remove('active'));
     const activeEl = document.getElementById(`favitem-${favIdx}`);
@@ -326,7 +333,4 @@ async function selectFavTrack(favIdx) {
         activeEl.classList.add('active');
         activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-
-    const meta = await callApi('get_metadata', track.path);
-    playMedia(meta);
 }
