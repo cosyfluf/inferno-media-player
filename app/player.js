@@ -243,7 +243,6 @@ function playTrackByPath(path) {
 }
 
 // --- MEDIA EVENTS ---
-// --- MEDIA EVENTS ---
 [audio, video].forEach(m => {
     // Handle end of track
     m.onended = () => { 

@@ -42,7 +42,7 @@ load_env()
 
 # Globale Variablen aus der Umgebung auslesen
 MEDIA_PORT = int(os.environ.get("MEDIA_PORT", 8080))
-FFMPEG_PATH = os.environ.get("FFMPEG_PATH", "ffmpeg")
+FFMPEG_PATH = os.path.join(os.path.dirname(__file__), "ffmpeg.exe")
 
 # Discord Client-ID aus der .env auslesen
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN", "")

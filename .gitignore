@@ -4,3 +4,6 @@ __pycache__/
 .cache
 *.tmp
 start.bat
+ffmpeg.exe
+ffplay.exe
+ffprobe.exe

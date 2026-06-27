@@ -36,45 +36,6 @@ function setupVisualizer(elem) {
     } catch(e) {}
 }
 
-// Draw function for visualizer
-let hueOffset = 0;
-
-function draw() {
-    if (!isVisualizerEnabled) return;
-
-    requestAnimationFrame(draw);
-
-    if(!analyser) return;
-
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    analyser.getByteFrequencyData(dataArray);
-
-    const canvas = document.getElementById('visualizer');
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-
-    ctx.clearRect(0, 0, width, height);
-    
-    const barCount = 60;
-    const barWidth = (width / barCount);
-
-    hueOffset += 1; 
-
-    for (let i = 0; i < barCount; i++) {
-        const barHeight = (dataArray[i] / 255) * height;
-
-        const hue = (i * 4 + hueOffset) % 360; 
-        
-        ctx.fillStyle = `hsl(${hue}, 80%, 50%)`; 
-        ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
-
-        ctx.fillStyle = `hsl(${hue}, 80%, 70%)`;
-        ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, 2);
-    }
-}
-
 // Persistent variables for animation
 let capPositions = []; 
 let flowOffset = 0;    
@@ -216,9 +177,10 @@ function animateColorTransition(target, duration = 800) {
         // Update current state
         currentColor = { r, g, b };
 
-        // Convert to HEX and apply to CSS variable
+        // Convert to HEX and apply to CSS variables
         const hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
         document.documentElement.style.setProperty('--dynamic', hex);
+        document.documentElement.style.setProperty('--dynamic-bright', hex);
 
         // Continue animation if not finished
         if (progress < 1) {
@@ -291,66 +253,4 @@ function toggleDynamicColor(isEnabled) {
     }
 }
 
-/* --- DYNAMIC BRIGHTNESS ADJUSTMENT FOR UI --- */
-let brightAnimId = null;
-let currentBrightState = { r: 255, g: 0, b: 0 }; // Internal tracker for smooth transition
 
-/**
- * @param {Object} inputRGB - The raw {r, g, b} color (e.g., from your average color extractor).
- */
-function processDynamicBright(inputRGB) {
-    // 1. Calculate perceived brightness (Luminance)
-    const luminance = (0.299 * inputRGB.r + 0.587 * inputRGB.g + 0.114 * inputRGB.b);
-    
-    // Target brightness threshold (0-255). 180 ensures it's clearly visible and "popping".
-    const minBrightness = 180;
-    
-    let target = { ...inputRGB };
-
-    // 2. If the color is too dark, lift it towards white
-    if (luminance < minBrightness) {
-        // Calculate how much we need to boost (0.0 to 1.0)
-        const boostFactor = (minBrightness - luminance) / 255;
-        
-        // Blend with white (255) to increase brightness while keeping the hue
-        target.r = Math.round(target.r + (255 - target.r) * boostFactor);
-        target.g = Math.round(target.g + (255 - target.g) * boostFactor);
-        target.b = Math.round(target.b + (255 - target.b) * boostFactor);
-    }
-
-    // 3. Smooth Transition Logic
-    const start = { ...currentBrightState };
-    const startTime = performance.now();
-    const duration = 1000; // 1 second for a premium smooth feel
-
-    if (brightAnimId) cancelAnimationFrame(brightAnimId);
-
-    function animate(now) {
-        const progress = Math.min((now - startTime) / duration, 1);
-        
-        // Cubic Out Easing: Smooth deceleration
-        const ease = 1 - Math.pow(1 - progress, 3);
-
-        // Interpolate RGB values
-        currentBrightState.r = Math.round(start.r + (target.r - start.r) * ease);
-        currentBrightState.g = Math.round(start.g + (target.g - start.g) * ease);
-        currentBrightState.b = Math.round(start.b + (target.b - start.b) * ease);
-
-        // Convert to HEX
-        const hex = "#" + (
-            (1 << 24) + 
-            (currentBrightState.r << 16) + 
-            (currentBrightState.g << 8) + 
-            currentBrightState.b
-        ).toString(16).slice(1);
-
-        // 4. Output as --dynamic-bright
-        document.documentElement.style.setProperty('--red', hex);
-
-        if (progress < 1) {
-            brightAnimId = requestAnimationFrame(animate);
-        }
-    }
-
-    brightAnimId = requestAnimationFrame(animate);
-}

@@ -3,8 +3,8 @@
             --dark-red: #800000;
             --dark: #050000;
             --glow: 0 0 20px rgba(255, 0, 0, 0.6);
-            /* --dynamic-bright will be set dynamically via JS */
-            /* --dynamic will be set dynamically via JS */
+            --dynamic-bright: #ffffff;
+            --dynamic: #ffffff;
         }
 
         body {
@@ -92,7 +92,7 @@
 
         .sidebar-header {
             padding: 70px 20px 20px;
-            color: var(--dynamic-bright);
+            color: var(--red);
             font-weight: bold;
             font-size: 26px;
             text-align: center;
@@ -286,11 +286,11 @@
         }
 
         .playlist-item.active .pl-title {
-            color: var(--dynamic-bright);
+            color: var(--red);
         }
 
         .playlist-item:hover {
-            color: var(--dynamic-bright);
+            color: var(--red);
             padding-left: 15px;
         }
 
@@ -438,6 +438,8 @@
 
         #ambient-glow {
             position: absolute;
+            top: 50%;
+            left: 50%;
             width: min(500px, 80vw, 45vh);
             height: min(500px, 80vw, 45vh);
             border-radius: 50%;
@@ -446,7 +448,7 @@
             transition: opacity 0.8s ease, background 1s ease;
             pointer-events: none;
             z-index: 0;
-            transform: scale(1.4);
+            transform: translate(-50%, -50%) scale(1.4);
             background: radial-gradient(circle, rgba(255,0,0,0.4) 0%, transparent 70%);
         }
 
@@ -609,15 +611,6 @@
             filter: drop-shadow(var(--glow));
         }
 
-        .flames {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 120px;
-            background: linear-gradient(0deg, rgba(255, 0, 0, 0.1) 0%, transparent 100%);
-            pointer-events: none;
-        }
-
         /* --- DOWNLOADER MODAL --- */
         .modal {
             display: none;
@@ -673,7 +666,7 @@
         .dl-confirm-btn {
             background: var(--dark-red);
             color: white;
-            border: 1px solid var(--dynamic-bright);
+            border: 1px solid var(--red);
             border-radius: 10px;
             padding: 10px 20px;
             cursor: pointer;
@@ -711,7 +704,7 @@
         #dl-status {
             margin-top: 15px;
             font-style: italic;
-            color: var(--dynamic-bright);
+            color: var(--red);
         }
 
         /* Checkbox Style */

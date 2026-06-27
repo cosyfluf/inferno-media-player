@@ -102,28 +102,16 @@ async function startDownload() {
     const useSpotify = document.getElementById('dl-spotify').checked;
     const status = document.getElementById('dl-status');
     
-    status.innerText = "Downloading and converting... please wait (Retry enabled automatically)";
-    document.getElementById('dl-step-2').style.display = 'none';async function startDownload() {
-    
-    if(response && response.status === "success") {
-        status.innerText = "🔥 Download finished!";
-        
-        setPlaylistLoading(true);
-        const newFiles = await callApi('scan_folder');
-        if(newFiles) renderPlaylist(newFiles);
-        setPlaylistLoading(false);
-    }
-}
+    status.innerText = "Downloading and converting... please wait";
+    document.getElementById('dl-step-2').style.display = 'none';
 
-    // Automatic silent retry happens inside callApi
     const response = await callApi('download_track', selectedYTItem.url, useSpotify);
 
     if(response && response.status === "success") {
-        status.innerText = "🔥 Download finished: " + response.filename;
-        // Automatic Refresh
+        status.innerText = "🔥 " + (response.filename || "Download finished!");
         const newFiles = await callApi('scan_folder');
         if(newFiles && Array.isArray(newFiles)) renderPlaylist(newFiles);
     } else {
-        status.innerText = "❌ Error: The process failed. Please try a different song.";
+        status.innerText = "❌ Download failed. Please try a different song.";
     }
 }

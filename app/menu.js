@@ -97,8 +97,8 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Initialize Settings Button
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize
+window.addEventListener('pywebviewready', () => {
     const burger = document.querySelector('.burger');
     if (burger) {
         burger.removeAttribute('onclick'); 
