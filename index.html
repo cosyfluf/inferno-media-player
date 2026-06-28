@@ -45,19 +45,26 @@
         </div>
     
         <!-- 4. Library Section -->
-        <div class="sidebar-header" style="padding-top: 20px; font-size: 18px;">LIBRARY</div>
+        <div class="sidebar-header" style="padding-top: 20px; font-size: 18px; display: flex; align-items: center; gap: 6px;">
+            LIBRARY
+            <div class="header-line"></div>
+            <svg class="divider-btn" viewBox="0 0 24 24" onclick="openFavModal()">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+        </div>
         <div id="favourites-list">
             <!-- Favourite playlists will appear here -->
         </div>
-        <div class="menu-item" onclick="openFavModal()">➕ Create Favourite</div>
 
         <!-- 5. Local Files Section -->
-        <div class="sidebar-header" style="padding-top: 20px; font-size: 18px; display: flex; justify-content: space-between; align-items: center;">
+        <div class="sidebar-header" style="padding-top: 20px; font-size: 18px; display: flex; align-items: center; gap: 6px;">
             LOCAL FILES
+            <div class="header-line"></div>
+            <svg class="divider-btn" viewBox="0 0 24 24" onclick="openDownloader()">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
             <span id="back-to-local" style="display: none; cursor: pointer; font-size: 12px; color: #ff4444;" onclick="backToLocalFiles()">⬅ Back</span>
         </div>
-
-        <div class="menu-item" onclick="openDownloader()">➕ Add Song</div>
 
         <div id="playlist-loader" class="loader-container" style="display: none;">
             <div class="loader"></div>
@@ -280,6 +287,13 @@
             try { return await window.pywebview.api[method](...args); }
             catch(e) { console.error('API call ' + method + ' failed:', e); return null; }
         }
+    </script>
+    <script>
+        function checkWindowed() {
+            document.body.classList.toggle('windowed', window.innerHeight < screen.availHeight - 10);
+        }
+        window.addEventListener('resize', checkWindowed);
+        checkWindowed();
     </script>
     <script src="app/visualizer.js"></script>
     <script src="app/playlist.js"></script>

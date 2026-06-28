@@ -405,6 +405,7 @@ class Api:
         if platform.system() == "Windows": subprocess.run(['explorer', '/select,', os.path.normpath(path)])
         elif platform.system() == "Darwin": subprocess.run(['open', '-R', path])
         else: subprocess.run(['xdg-open', os.path.dirname(path)])
+        return True
         
     def get_radio_metadata(self, url):
         """Extracts ICY metadata from a live stream."""

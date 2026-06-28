@@ -7,13 +7,17 @@
             --dynamic: #ffffff;
         }
 
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             background: var(--dark);
             color: rgb(255, 0, 0);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
             display: flex;
-            height: 100vh;
             overflow: hidden;
             }
 
@@ -62,6 +66,7 @@
         /* --- SIDEBAR --- */
         #sidebar {
             width: 320px;
+            height: 100vh;
             background: #0a0000;
             border-right: 2px solid var(--red);
             display: flex;
@@ -75,8 +80,8 @@
         }
 
         .toggle-arrow {
-            position: absolute;
-            top: 15px;
+            position: fixed;
+            top: 10px;
             left: 15px;
             cursor: pointer;
             fill: var(--red);
@@ -144,8 +149,8 @@
         }
 
         .burger {
-            position: absolute;
-            top: 15px;
+            position: fixed;
+            top: 10px;
             right: 15px;
             cursor: pointer;
             fill: var(--red);
@@ -381,6 +386,26 @@
             background: #fff;
         }
 
+        .divider-btn {
+            width: 18px;
+            height: 18px;
+            fill: #666;
+            cursor: pointer;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+
+        .divider-btn:hover {
+            fill: #0f0;
+            transform: scale(1.2);
+        }
+
+        .header-line {
+            flex: 1;
+            height: 0;
+            border-bottom: 1px solid #300;
+        }
+
         /* Search Input Styling */
 
         .search-box {
@@ -523,6 +548,10 @@
             border-radius: 25px;
             border: 1px solid #500;
             backdrop-filter: blur(10px);
+        }
+
+        .windowed .controls {
+            margin-top: -40px;
         }
 
         .progress-box {
@@ -755,28 +784,18 @@
             font-weight: bold;
         }
 
-        /* --- SHOW IN FOLDER ICON --- */
-        .show-folder-btn {
+        .remove-track-btn {
             width: 20px;
             height: 20px;
-            fill: #666;
             margin-left: 8px;
             padding: 6px;
             border-radius: 5px;
-            transition: 0.2s;
-            opacity: 0;
-            /* Hidden until hover */
             cursor: pointer;
             flex-shrink: 0;
         }
 
-        .playlist-item:hover .show-folder-btn {
-            opacity: 1;
-        }
-
-        .show-folder-btn:hover {
-            fill: var(--red);
-            background: rgba(255, 0, 0, 0.1);
+        .remove-track-btn:hover {
+            background: rgba(255, 0, 0, 0.2);
             transform: scale(1.1);
         }
         /* --- FAVOURITES UI --- */

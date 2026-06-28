@@ -228,7 +228,7 @@ function renderFavouriteTracks(tracks, favId) {
                 <div class="pl-title">${f.name || f.filename}</div>
                 <div class="pl-artist">${f.artist || 'Unknown Artist'}</div>
             </div>
-            <svg class="show-folder-btn" viewBox="0 0 24 24" title="Remove from playlist" 
+            <svg class="remove-track-btn" viewBox="0 0 24 24" title="Remove from playlist" 
                 onclick="removeTrackFromFav(${favId}, '${escapedPath}', ${i}); event.stopPropagation();"
                 style="fill:#ff4444;opacity:1;">
                 <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>

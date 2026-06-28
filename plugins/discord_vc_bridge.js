@@ -36,15 +36,27 @@ function injectElement(parentSelector, html) {
     return el;
 }
 
+function injectBefore(targetSelector, html) {
+    const target = document.querySelector(targetSelector);
+    if (!target) return;
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    const el = temp.firstElementChild;
+    target.parentNode.insertBefore(el, target);
+    injectedUI.push(el);
+    window.InfernoPluginAPI.registerCleanup(() => el.remove());
+    return el;
+}
+
 setTimeout(() => {
     injectCSS(`
         .bot-vol-box {
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-            margin-top: 15px; padding-top: 15px; border-top: 1px dashed #400;
-            color: var(--red); font-size: 13px; font-weight: bold;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 15px;
+            color: var(--red);
         }
         #bot-vol-slider {
-            width: 150px; -webkit-appearance: none; background: transparent; cursor: pointer;
+            width: 100%; -webkit-appearance: none; background: transparent; cursor: pointer;
         }
         #bot-vol-slider::-webkit-slider-runnable-track {
             width: 100%; height: 6px; background: #200; border-radius: 3px; border: 1px solid #400;
@@ -58,18 +70,16 @@ setTimeout(() => {
         }
     `);
 
-    const container = injectElement('.controls', `
+    const container = injectBefore('.volume-box', `
         <div class="bot-vol-box">
-            <span>🤖 Discord VC Vol:</span>
+            <span>🤖</span>
             <input type="range" id="bot-vol-slider" min="0" max="2" step="0.05" value="1.0">
-            <span id="bot-vol-label" style="width: 40px; text-align: right;">100%</span>
         </div>
     `);
 
     if (container) {
         document.getElementById('bot-vol-slider').addEventListener('input', (e) => {
             botVolume = parseFloat(e.target.value);
-            document.getElementById('bot-vol-label').innerText = Math.round(botVolume * 100) + '%';
         });
     }
 }, 1000);

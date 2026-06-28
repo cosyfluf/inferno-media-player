@@ -45,7 +45,7 @@ function renderPlaylist(files) {
         const coverSrc = f.cover && f.cover !== "" ? f.cover : 'alt.png';
         const escapedPath = f.path.replace(/\\/g, '\\\\');
         return `
-        <div class="playlist-item" id="item-${i}" onclick="selectTrack(${i})">
+        <div class="playlist-item" id="item-${i}" onclick="selectTrack(${i})" oncontextmenu="showPlaylistContextMenu(event, ${i})">
             <img class="pl-cover-mini" src="${coverSrc}" onerror="this.src='alt.png'">
             <div class="pl-text-container">
                 <div class="pl-title">${f.name || f.filename}</div>
@@ -53,10 +53,6 @@ function renderPlaylist(files) {
             </div>
             <svg class="add-to-fav-btn" viewBox="0 0 24 24" onclick="showFavSelector(event, '${escapedPath}')">
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-            </svg>
-            <svg class="show-folder-btn" viewBox="0 0 24 24" title="Show in folder" 
-                onclick="showInFolder('${escapedPath}'); event.stopPropagation();">
-                <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/>
             </svg>
         </div>
         `;
@@ -98,3 +94,38 @@ window.addEventListener('pywebviewready', () => {
         });
     }
 });
+
+function showPlaylistContextMenu(event, index) {
+    event.preventDefault();
+    event.stopPropagation();
+    const old = document.querySelector('.fav-selector');
+    if (old) old.remove();
+
+    const item = playlist[index];
+    if (!item) return;
+
+    const menu = document.createElement('div');
+    menu.className = 'fav-selector';
+    menu.style.left = event.clientX + "px";
+    menu.style.top = event.clientY + "px";
+
+    const folderItem = document.createElement('div');
+    folderItem.className = 'menu-item';
+    folderItem.innerText = "Show in folder";
+    folderItem.onclick = (e) => {
+        e.stopPropagation();
+        showInFolder(item.path);
+        menu.remove();
+    };
+
+    menu.appendChild(folderItem);
+    document.body.appendChild(menu);
+
+    setTimeout(() => {
+        window.onclick = (e) => {
+            if (e && e.target && menu.contains(e.target)) return;
+            menu.remove();
+            window.onclick = null;
+        };
+    }, 100);
+}
