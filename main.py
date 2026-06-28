@@ -260,11 +260,25 @@ class Api:
             except: pass
 
     def search_song(self, query):
-        ydl_opts = {'format': 'bestaudio', 'noplaylist': True, 'quiet': True, 'ffmpeg_location': FFMPEG_PATH}
+        ydl_opts = {
+            'quiet': True,
+            'ffmpeg_location': FFMPEG_PATH,
+            'extract_flat': True,
+        }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(f"ytsearch5:{query}", download=False)
-                return [{'title': e.get('title'), 'url': e.get('webpage_url'), 'duration': e.get('duration'), 'thumbnail': e.get('thumbnail')} for e in info['entries']]
+                info = ydl.extract_info(f"ytmusicsearch:5:{query}", download=False)
+                entries = []
+                for e in info.get('entries', []):
+                    entries.append({
+                        'title': e.get('title', 'Unknown'),
+                        'url': e.get('url') or e.get('webpage_url', ''),
+                        'duration': e.get('duration', 0),
+                        'thumbnail': e.get('thumbnail', ''),
+                        'artist': e.get('artist') or e.get('channel') or e.get('uploader', ''),
+                        'album': e.get('album', ''),
+                    })
+                return entries
         except Exception as e: return {"error": str(e)}
 
     def download_track(self, yt_url, use_spotify=False):
@@ -272,6 +286,8 @@ class Api:
             with yt_dlp.YoutubeDL({'quiet': True, 'ffmpeg_location': FFMPEG_PATH}) as ydl:
                 info = ydl.extract_info(yt_url, download=False)
                 title = info.get('title', 'Unknown')
+                artist = info.get('artist') or info.get('channel') or info.get('uploader', 'Unknown Artist')
+                album = info.get('album', '')
             clean_name = "".join([c for c in title if c.isalnum() or c in (' ', '.', '_')]).strip()
             temp_path = os.path.join(self.current_path, clean_name)
             final_path = temp_path + ".mp3"
@@ -279,21 +295,44 @@ class Api:
                 'format': 'bestaudio/best',
                 'outtmpl': temp_path,
                 'progress_hooks': [self._progress_hook],
-                'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3','preferredquality': '192'}],
+                'postprocessors': [
+                    {'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3', 'preferredquality': '192'},
+                    {'key': 'FFmpegMetadata', 'add_metadata': True},
+                ],
+                'writethumbnail': True,
                 'quiet': True,
-                'ffmpeg_location': FFMPEG_PATH
+                'ffmpeg_location': FFMPEG_PATH,
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([yt_url])
-            self._apply_tags(final_path, title)
+
+            thumb_path = None
+            for ext in ['.webp', '.jpg', '.png', '.jpeg']:
+                tp = temp_path + ext
+                if os.path.exists(tp):
+                    thumb_path = tp
+                    break
+
+            self._apply_tags(final_path, title, artist, album, thumb_path)
+
+            if thumb_path:
+                try: os.remove(thumb_path)
+                except: pass
+
             return {"status": "success", "filename": clean_name}
         except Exception as e: return {"status": "error", "message": str(e)}
 
-    def _apply_tags(self, file_path, yt_title):
-        title, artist, album = yt_title, "Unknown Artist", "Inferno Downloads"
+    def _apply_tags(self, file_path, yt_title, artist="Unknown Artist", album="", thumb_path=None):
         try:
             audio = MP3(file_path, ID3=ID3)
-            audio.tags.add(TIT2(encoding=3, text=title)); audio.tags.add(TPE1(encoding=3, text=artist)); audio.tags.add(TALB(encoding=3, text=album))
+            audio.tags.add(TIT2(encoding=3, text=yt_title))
+            audio.tags.add(TPE1(encoding=3, text=artist))
+            audio.tags.add(TALB(encoding=3, text=album or "Inferno Downloads"))
+            if thumb_path:
+                with open(thumb_path, 'rb') as f:
+                    thumb_data = f.read()
+                mime = "image/jpeg" if thumb_path.endswith(('.jpg', '.jpeg')) else "image/png" if thumb_path.endswith('.png') else "image/webp"
+                audio.tags.add(APIC(encoding=3, mime=mime, type=3, desc='Cover', data=thumb_data))
             audio.save()
         except: pass
 

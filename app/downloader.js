@@ -48,7 +48,7 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-// STEP 1: SEARCH YT (Using callApi)
+// STEP 1: SEARCH YT MUSIC (Using callApi)
 async function searchYT() {
     const query = document.getElementById('dl-input').value;
     if(!query) return;
@@ -56,7 +56,7 @@ async function searchYT() {
     const status = document.getElementById('dl-status');
     const resultsDiv = document.getElementById('dl-results');
     
-    status.innerText = "Searching YouTube (Safe-mode active)...";
+    status.innerText = "Searching YouTube Music...";
     resultsDiv.innerHTML = "";
     document.getElementById('dl-step-2').style.display = 'none';
 
@@ -72,11 +72,13 @@ async function searchYT() {
     results.forEach(item => {
         const div = document.createElement('div');
         div.className = 'dl-result-item';
+        const artist = item.artist ? ' | ' + item.artist : '';
+        const album = item.album ? ' • ' + item.album : '';
         div.innerHTML = `
             <img src="${item.thumbnail}">
             <div>
                 <div style="font-weight:bold">${item.title}</div>
-                <div style="font-size:0.8em; color:#888">${Math.floor(item.duration/60)}:${(item.duration%60).toString().padStart(2,'0')}</div>
+                <div style="font-size:0.8em; color:#888">${Math.floor(item.duration/60)}:${(item.duration%60).toString().padStart(2,'0')}${artist}${album}</div>
             </div>
         `;
         div.onclick = () => selectForDownload(item);
