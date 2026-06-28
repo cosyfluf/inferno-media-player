@@ -267,13 +267,18 @@ class Api:
         }
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(f"ytmusicsearch:5:{query}", download=False)
+                info = ydl.extract_info(f"ytmusicsearch5:{query}", download=False)
                 entries = []
                 for e in info.get('entries', []):
+                    url = e.get('url') or e.get('webpage_url', '')
+                    if not url:
+                        video_id = e.get('id', '')
+                        if video_id:
+                            url = f"https://music.youtube.com/watch?v={video_id}"
                     entries.append({
                         'title': e.get('title', 'Unknown'),
-                        'url': e.get('url') or e.get('webpage_url', ''),
-                        'duration': e.get('duration', 0),
+                        'url': url,
+                        'duration': e.get('duration') or e.get('duration_string', 0),
                         'thumbnail': e.get('thumbnail', ''),
                         'artist': e.get('artist') or e.get('channel') or e.get('uploader', ''),
                         'album': e.get('album', ''),
