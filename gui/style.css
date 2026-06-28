@@ -7,6 +7,24 @@
             --dynamic: #ffffff;
         }
 
+
+
+        @keyframes marquee-scroll {
+            0% { transform: translateX(var(--start-pos)); }
+            100% { transform: translateX(var(--end-pos)); }
+        }
+
+        .marquee-container {
+            width: 40ch;
+            margin: 0 auto;
+        }
+
+        .marquee-text {
+            display: inline-block;
+            white-space: nowrap !important;
+            animation: marquee-scroll 10s linear infinite;
+        }
+
         html, body {
             height: 100%;
             margin: 0;
@@ -517,13 +535,14 @@
             z-index: 10;
         }
 
-        .info h1 {
+        #title {
             margin: 0;
             font-size: 28px;
             letter-spacing: 2px;
             text-transform: uppercase;
             color: white;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
         }
 
         .info p {

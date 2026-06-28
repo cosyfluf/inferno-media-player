@@ -145,6 +145,7 @@ function playMedia(meta) {
 
     // Set UI Text
     document.getElementById('title').innerText = meta.title || "Unknown Title";
+    if (typeof startMarquee === 'function') startMarquee();
     document.getElementById('details').innerText = `${meta.artist || 'Inferno Artist'} | ${meta.album || 'No Album'}`;
     
     // Set duration text

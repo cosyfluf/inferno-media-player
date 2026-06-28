@@ -88,7 +88,9 @@
         </div>
 
         <div class="info">
-            <h1 id="title">Ready for INFERNO?</h1>
+            <div class="marquee-container" id="title-container">
+                <span id="title">Ready for INFERNO?</span>
+            </div>
             <p id="details">Select a track from your playlist</p>
         </div>
 
@@ -294,6 +296,88 @@
         }
         window.addEventListener('resize', checkWindowed);
         checkWindowed();
+
+        var marqueeActive = false;
+        var marqueeRafId = null;
+        function measureTextWidth(el) {
+            var span = document.createElement('span');
+            span.style.font = window.getComputedStyle(el).font;
+            span.style.letterSpacing = window.getComputedStyle(el).letterSpacing;
+            span.style.textTransform = window.getComputedStyle(el).textTransform;
+            span.style.whiteSpace = 'nowrap';
+            span.style.position = 'fixed';
+            span.style.left = '-9999px';
+            span.style.top = '-9999px';
+            span.style.visibility = 'hidden';
+            span.textContent = el.textContent || el.innerText;
+            document.body.appendChild(span);
+            var w = span.offsetWidth;
+            document.body.removeChild(span);
+            return w;
+        }
+        function startMarquee() {
+            var el = document.getElementById('title');
+            var container = document.getElementById('title-container');
+            if (!el || !container) return;
+            var text = el.textContent || el.innerText;
+            console.log('[Marquee] Text:', '"' + text + '"', '| Length:', text.length);
+
+            if (text.length < 20) {
+                if (marqueeActive) {
+                    el.classList.remove('marquee-text');
+                    container.style.textAlign = '';
+                    container.style.overflow = '';
+                    container.style.maskImage = '';
+                    container.style.webkitMaskImage = '';
+                    marqueeActive = false;
+                    console.log('[Marquee] Deactivated (text < 40)');
+                }
+                if (marqueeRafId) { cancelAnimationFrame(marqueeRafId); marqueeRafId = null; }
+                return;
+            }
+
+            if (marqueeRafId) cancelAnimationFrame(marqueeRafId);
+
+            marqueeRafId = requestAnimationFrame(function() {
+                marqueeRafId = null;
+                var textW = measureTextWidth(el);
+                var containerW = container.clientWidth;
+
+                if (textW <= containerW + 5) {
+                    if (marqueeActive) {
+                        el.classList.remove('marquee-text');
+                        container.style.textAlign = '';
+                        container.style.overflow = '';
+                        container.style.maskImage = '';
+                        container.style.webkitMaskImage = '';
+                        marqueeActive = false;
+                    }
+                    console.log('[Marquee] Deactivated (text fits)');
+                    return;
+                }
+
+                container.style.setProperty('--start-pos', containerW + 'px');
+                container.style.setProperty('--end-pos', '-' + textW + 'px');
+                container.style.textAlign = 'left';
+                container.style.overflow = 'hidden';
+                container.style.maskImage = 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)';
+                container.style.webkitMaskImage = 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)';
+                el.classList.add('marquee-text');
+                marqueeActive = true;
+                console.log('[Marquee] Activated | textW:', textW, '| containerW:', containerW);
+            });
+        }
+
+        var titleEl = document.getElementById('title');
+        if (titleEl) {
+            var observer = new MutationObserver(function() {
+                console.log('[Marquee] MutationObserver fired');
+                startMarquee();
+            });
+            observer.observe(titleEl, { childList: true, subtree: true, characterData: true });
+        }
+        window.addEventListener('resize', startMarquee);
+        startMarquee();
     </script>
     <script src="app/visualizer.js"></script>
     <script src="app/playlist.js"></script>
